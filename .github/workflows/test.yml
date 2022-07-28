@@ -84,3 +84,44 @@ jobs:
         with:
           path: "./coverage/lcov.info"
           min_coverage: 100
+
+  forge:
+    name: Run Forge Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install forge dependencies
+        run: forge install
+
+      - name: Run tests
+        run: forge test -vvv
+
+  forge-fork:
+    name: Run Forge Tests (Forked against Mainnet)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install forge dependencies
+        run: forge install
+
+      - name: Run tests
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          BLOCK_NUMBER: 15149829
+        run: FOUNDRY_PROFILE=fork forge test -vvv --fork-url $ETH_RPC_URL --fork-block-number $BLOCK_NUMBER

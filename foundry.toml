@@ -1,0 +1,13 @@
+[profile.local]
+src = 'contracts'
+out = 'out'
+libs = ['lib']
+remappings = [
+    'shipyard/=contracts/'
+]
+
+[profile.fork]
+fuzz_runs = 256
+test = 'fork-test'
+
+# See more config options https://github.com/foundry-rs/foundry/tree/master/config
