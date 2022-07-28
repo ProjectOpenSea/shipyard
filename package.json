@@ -57,6 +57,8 @@
   "scripts": {
     "build": "hardhat compile --config ./hardhat.config.ts",
     "test": "hardhat test --config ./hardhat.config.ts",
+    "test:forge": "forge test -vvv",
+    "test:forge:fork": "FOUNDRY_PROFILE=fork forge test -vvv --fork-url $ETH_RPC_URL",
     "profile": "REPORT_GAS=true hardhat test --config ./hardhat.config.ts",
     "coverage": "hardhat coverage --config ./hardhat-coverage.config.ts --solcoverjs ./config/.solcover.js",
     "lint:check": "yarn lint:check:format && yarn lint:check:solhint && yarn lint:check:eslint",
