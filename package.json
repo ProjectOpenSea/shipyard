@@ -54,7 +54,8 @@
     "underscore": ">=1.12.1",
     "yargs-parser": ">=5.0.1",
     "undici": ">=5.8.2",
-    "got": ">=11.8.5"
+    "got": ">=11.8.5",
+    "minimatch": ">=3.0.5"
   },
   "scripts": {
     "build": "hardhat compile --config ./hardhat.config.ts",
