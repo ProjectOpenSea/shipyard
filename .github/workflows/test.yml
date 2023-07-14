@@ -51,6 +51,10 @@ jobs:
             git config --local user.email '<>'
             git add .
             git commit -m "Github Actions automatically updated formatting with `forge fmt`"
+            COMMIT_HASH=$(git rev-parse HEAD)
+            echo $COMMIT_HASH >> .git-blame-ignore-revs
+            git add .git-blame-ignore-revs
+            git commit -m "Updated .git-blame-ignore-revs with commit $COMMIT_HASH"
             BRANCH_NAME=$(git symbolic-ref --short HEAD)
             echo $BRANCH_NAME
             git push origin $BRANCH_NAME
