@@ -10,6 +10,9 @@ on:
 env:
   FOUNDRY_PROFILE: ci
 
+permissions:
+  contents: write
+
 jobs:
   check:
     strategy:
@@ -18,8 +21,9 @@ jobs:
     name: Foundry project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
+          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Install Foundry
@@ -41,11 +45,14 @@ jobs:
       - name: Lint
         run: |
           forge fmt
+          pwd
           if [[ `git diff --exit-code` ]]; then        
             git config --local user.name 'GitHub Actions Bot'
             git config --local user.email '<>'
             git add .
             git commit -m "Automatically updated formatting"
-            git push
+            BRANCH_NAME==$(git symbolic-ref --short HEAD)
+            echo $BRANCH_NAME
+            git push origin $BRANCH_NAME
           fi
         id: update
