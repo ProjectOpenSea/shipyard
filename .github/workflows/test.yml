@@ -50,7 +50,7 @@ jobs:
             git config --local user.name 'GitHub Actions Bot'
             git config --local user.email '<>'
             git add .
-            git commit -m "Automatically updated formatting"
+            git commit -m "Github Actions automatically updated formatting with `forge fmt`"
             BRANCH_NAME=$(git symbolic-ref --short HEAD)
             echo $BRANCH_NAME
             git push origin $BRANCH_NAME
