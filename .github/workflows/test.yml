@@ -37,3 +37,15 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+      - name: Lint
+        run: |
+          forge fmt
+          if [[ `git diff --exit-code` ]]; then        
+            git config --local user.name 'GitHub Actions Bot'
+            git config --local user.email '<>'
+            git add .
+            git commit -m "Automatically updated formatting"
+            git push
+          fi
+        id: update
