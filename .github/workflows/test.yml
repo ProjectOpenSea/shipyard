@@ -56,7 +56,6 @@ jobs:
             git add .git-blame-ignore-revs
             git commit -m "Updated .git-blame-ignore-revs with commit $COMMIT_HASH"
             BRANCH_NAME=$(git symbolic-ref --short HEAD)
-            echo $BRANCH_NAME
             git push origin $BRANCH_NAME
           fi
         id: update
