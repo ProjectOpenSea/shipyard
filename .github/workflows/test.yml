@@ -50,7 +50,7 @@ jobs:
             git config --local user.name 'GitHub Actions Bot'
             git config --local user.email '<>'
             git add .
-            git commit -m "Github Actions automatically updated formatting with `forge fmt`"
+            git commit -m "Github Actions automatically updated formatting with forge fmt"
             COMMIT_HASH=$(git rev-parse HEAD)
             echo $COMMIT_HASH >> .git-blame-ignore-revs
             git add .git-blame-ignore-revs
