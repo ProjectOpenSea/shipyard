@@ -51,7 +51,7 @@ jobs:
             git config --local user.email '<>'
             git add .
             git commit -m "Automatically updated formatting"
-            BRANCH_NAME==$(git symbolic-ref --short HEAD)
+            BRANCH_NAME=$(git symbolic-ref --short HEAD)
             echo $BRANCH_NAME
             git push origin $BRANCH_NAME
           fi
