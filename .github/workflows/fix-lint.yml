@@ -13,7 +13,7 @@ permissions:
 jobs:
   run-linters:
     name: Run linters
-    if: github.event.issue.pull_request && ${{ github.event.comment.body == 'AUTOFIX' }}
+    if: github.event.issue.pull_request && ${{ github.event.comment.body == '!fix' }}
     runs-on: ubuntu-latest
 
     steps:
