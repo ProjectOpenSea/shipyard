@@ -35,9 +35,6 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Setup
-        uses: ./.github/actions/setup
-
       
       - name: Lint
         run: |
