@@ -1,4 +1,4 @@
-name: test
+name: lint
 
 on:
   push:
@@ -9,9 +9,6 @@ on:
 
 env:
   FOUNDRY_PROFILE: ci
-
-permissions:
-  contents: write
 
 jobs:
   check:
@@ -31,13 +28,6 @@ jobs:
         with:
           version: nightly
 
-      - name: Run Forge build
+      - name: Lint
         run: |
-          forge --version
-          forge build --sizes
-        id: build
-
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+          forge fmt --check

@@ -10,5 +10,14 @@ remappings = [
     'shipyard-core/=lib/shipyard-core/src/',
 ]
 bytecode_hash = 'none'
+# etherscan currently does not support contracts with more than 10 million optimizer runs;
+# bytecode is typically unaffected past ~1 million runs anyway
+optimizer_runs = 99_999_999
+
+[profile.via_ir]
+via_ir = true
+# do not compile tests when compiling via ir
+test = 'src'
+out = 'via_ir-out'
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
