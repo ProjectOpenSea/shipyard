@@ -1,6 +1,7 @@
 # Compiler files
 cache/
 out/
+via_ir-out/
 
 # Ignores development broadcast logs
 !/broadcast
@@ -14,3 +15,7 @@ docs/
 .env
 
 .DS_Store
+
+# coverage
+coverage/
+lcov.info

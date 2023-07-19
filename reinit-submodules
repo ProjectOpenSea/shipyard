@@ -1,0 +1,5 @@
+# when switching between git branches on forge projects, submodules may become
+# out-of-sync
+# h/t @PaulRBerg: https://twitter.com/PaulRBerg/status/1629425771457531905
+git submodule deinit -f .
+git submodule update --init --recursive

@@ -39,5 +39,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          FOUNDRY_PROFILE=CI forge test -vvv
         id: test

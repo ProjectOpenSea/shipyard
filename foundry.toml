@@ -1,4 +1,6 @@
 [profile.default]
+auto_detect_solc = false
+solc = '0.8.20'
 src = "src"
 out = "out"
 libs = ["lib"]
@@ -9,15 +11,28 @@ remappings = [
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
     'shipyard-core/=lib/shipyard-core/src/',
 ]
+# use realistic numbers in tests
+block_number = 17722462
+block_timestamp = 1689711647
+# don't pollute bytecode with metadata
 bytecode_hash = 'none'
+cbor_metadata = false
+# grant access to read via_ir-out by default, if necessary
+fs_permissions = [{ access = "read", path = "./via_ir-out" }]
 # etherscan currently does not support contracts with more than 10 million optimizer runs;
 # bytecode is typically unaffected past ~1 million runs anyway
 optimizer_runs = 99_999_999
 
+# via_ir pipeline is very slow - use a separate profile to pre-compile and then use vm.getCode to deploy
 [profile.via_ir]
 via_ir = true
-# do not compile tests when compiling via ir
+# do not compile tests when compiling via-ir
 test = 'src'
 out = 'via_ir-out'
+
+# offload bulk of fuzz runs to CI
+[profile.CI.fuzz]
+fuzz_runs = 1024
+
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
