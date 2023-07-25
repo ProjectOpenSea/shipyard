@@ -34,7 +34,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^6.0.0",
     "ethereum-waffle": "^3.4.0",
-    "hardhat-gas-reporter": "^1.0.7",
+    "hardhat-gas-reporter": "^1.0.9",
     "husky": ">=6",
     "lint-staged": ">=10",
     "prettier": "^2.5.1",
