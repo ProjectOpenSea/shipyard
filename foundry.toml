@@ -10,6 +10,7 @@ remappings = [
     'solady-test/=lib/solady/test/',
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
     'shipyard-core/=lib/shipyard-core/src/',
+    'seaport-types/=lib/seaport-types/src/'
 ]
 # use realistic numbers in tests
 block_number = 17722462
