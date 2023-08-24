@@ -39,6 +39,8 @@ Shipyard comes with some batteries included
 
 ## Usage
 
+Shipyard can be used as a starting point or a toolkit in a wide variety of circumstances. Here's a concrete example. To deploy a top of the line NFT contract using shipyard, *TODO*
+
 ### Reinitialize Submodules
 When working across branches with different dependencies, submodules may need to be reinitialized. Run
 ```bash
@@ -51,6 +53,16 @@ Run
 ./coverage-report
 ```
 
+### Useful Aliases
+
+```
+alias gm="foundryup"
+alias ff="forge fmt"
+reinit() {
+    git submodule deinit -f .
+    git submodule update --init
+}
+```
 
 
 ## Roadmap
