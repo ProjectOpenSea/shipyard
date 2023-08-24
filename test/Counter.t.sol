@@ -14,7 +14,10 @@ contract CounterTest is Test {
 
     function testIncrement() public {
         counter.increment();
-        assertEq(counter.number(), 1);
+        string[] memory bla = new string[](1);
+        bla[0] = "bla";
+        bla[1] = "bla";
+        assertEq(counter.number(), type(uint8).max + 1);
     }
 
     function testSetNumber(uint256 x) public {
