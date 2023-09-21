@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Script.sol";
 
-import { ExampleNFT } from "shipyard-core/reference/ExampleNFT.sol";
+import {ExampleNFT} from "shipyard-core/reference/ExampleNFT.sol";
 
 import "forge-std/console.sol";
 
