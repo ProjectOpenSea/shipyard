@@ -24,6 +24,9 @@ fs_permissions = [{ access = "read", path = "./via_ir-out" }]
 # bytecode is typically unaffected past ~1 million runs anyway
 optimizer_runs = 99_999_999
 
+[rpc_endpoints]
+goerli = "${GOERLI_RPC_URL}"
+
 # via_ir pipeline is very slow - use a separate profile to pre-compile and then use vm.getCode to deploy
 [profile.via_ir]
 via_ir = true
@@ -56,5 +59,22 @@ fs_permissions = [{ access = 'read-write', path = './test-ffi/' }]
 [profile.ci-ffi.fuzz]
 runs = 10
 
+[profile.tutorial]
+src = "lib/shipyard-core/src"
+test = 'lib/shipyard-core/test'
+out = "lib/shipyard-core/out"
+libs = ["lib/shipyard-core/lib"]
+remappings = [
+    'src/=lib/shipyard-core/src/',
+    'dynamic-traits/=lib/shipyard-core/lib/dynamic-traits/src/',
+    'forge-std/=lib/shipyard-core/lib/forge-std/src',
+    'openzeppelin-contracts/=lib/shipyard-core/lib/openzeppelin-contracts/contracts/',
+    'openzeppelin-contracts/contracts/=lib/shipyard-core/lib/openzeppelin-contracts/contracts/',
+    'seaport-types/=lib/shipyard-core/lib/seaport-types/src/',
+    'shipyard-core/=lib/shipyard-core/src/',
+    'solady-test/=lib/shipyard-core/lib/solady/test/',
+    'solady/=lib/shipyard-core/lib/solady/src/',
+    'solarray/=lib/shipyard-core/lib/solarray/src/',
+]
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
