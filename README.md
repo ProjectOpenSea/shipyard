@@ -39,6 +39,74 @@ Shipyard comes with some batteries included
 
 ## Usage
 
+Shipyard can be used as a starting point or a toolkit in a wide variety of circumstances. In general, if you're building something NFT related, you're likely to find something useful here. For the sake of exploring some of what Shipyard has to offer in concrete terms, here's a guide on how to deploy an NFT contract.
+
+### Quick Deploy Guide
+
+To deploy an NFT contract to the Goerli testnet, fund an address with 0.25 Goerli ETH, swap in the appropriate values for `<your_favorite_goerli_rpc_url>` and `<your_pk>` in this command, open a terminal window, and run the following:
+
+```
+mkdir my-shipyard-based-project &&
+cd my-shipyard-based-project &&
+curl -L https://foundry.paradigm.xyz | bash &&
+foundryup &&
+forge init --template projectopensea/shipyard &&
+forge build &&
+export GOERLI_RPC_URL='<your_favorite_goerli_rpc_url>' &&
+export MY_ACTUAL_PK_BE_CAREFUL='<your_pk>' &&
+forge create --rpc-url $GOERLI_RPC_URL \
+    --private-key $MY_ACTUAL_PK_BE_CAREFUL \
+    lib/shipyard-core/src/reference/ExampleNFT.sol:ExampleNFT \
+    --constructor-args "Tutorial Example NFT" "TENFT"
+```
+
+A quick breakdown of each step follows.
+
+Create a directory, `cd` into it, :
+```
+mkdir my-shipyard-based-project &&
+cd my-shipyard-based-project &&
+curl -L https://foundry.paradigm.xyz | bash
+```
+
+Install the `foundryup` up command and run it, which in turn installs forge, cast, anvil, and chisel:
+```
+curl -L https://foundry.paradigm.xyz | bash &&
+foundryup
+```
+
+Create a new Foundry project based on Shipyard, which also initializes a new git repository.
+```
+forge init --template projectopensea/shipyard
+```
+
+Install dependencies and compile the contracts:
+```
+forge build
+```
+
+Set up your environment variables:
+```
+export GOERLI_RPC_URL='<your_favorite_goerli_rpc_url>'	 &&
+export MY_ACTUAL_PK_BE_CAREFUL='<your_pk>'
+```
+
+Run the `forge create` command, which deploys the contract:
+```
+forge create --rpc-url $GOERLI_RPC_URL \
+    --private-key $MY_ACTUAL_PK_BE_CAREFUL \
+    lib/shipyard-core/src/reference/ExampleNFT.sol:ExampleNFT \
+    --constructor-args "Tutorial Example NFT" "TENFT"
+```
+
+See https://book.getfoundry.sh/reference/forge/forge-create for more information on `forge create`.
+
+Running this command merely deploys the unchanged example NFT contract to a testnet, but it's a good way to check for a properly functioning dev environment.
+
+### Sev env setup and deployment tutorial
+
+See [the tutorial](https://github.com/ProjectOpenSea/shipyard-example-project/tree/main/exampleNFTTutorial) in [the example repo](https://github.com/ProjectOpenSea/shipyard-example-project) for more detail on modifying the example contract, writing tests, deploying, and more.
+
 ### Reinitialize Submodules
 When working across branches with different dependencies, submodules may need to be reinitialized. Run
 ```bash
