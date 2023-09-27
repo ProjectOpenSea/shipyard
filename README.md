@@ -1,28 +1,6 @@
 # Shipyard
 
-Shipyard is a Forge template for smart contract development.
-
-
-## Installation
-
-Shipyard requires Foundry. You can find specific install instructions [here](https://book.getfoundry.sh/getting-started/installation#using-foundryup).
-
-But most likely, you can install Foundry with the following commands:
-
-```bash
-# this installs Foundryup, the Foundry installer and updater
-curl -L https://foundry.paradigm.xyz | bash
-# follow the onscreen instructions output by the previous command to make Foundryup available in your CLI (or else restart your CLI), then run:
-foundryup
-```
-
-If you plan on generating coverage reports, you'll need to install [`lcov`](https://github.com/linux-test-project/lcov) as well.
-
-On macOS, you can do this with the following command:
-
-```bash
-brew install lcov
-```
+Shipyard is a Forge template for smart contract development. See [the tutorial](exampleNftTutorial/Overview.md) for detailed instructions on using Shipyard or jump down to [the usage section](#usage) below for more info on how it works.
 
 ## Overview
 Shipyard comes with some batteries included
@@ -43,69 +21,51 @@ Shipyard can be used as a starting point or a toolkit in a wide variety of circu
 
 ### Quick Deploy Guide
 
-To deploy an NFT contract to the Goerli testnet, fund an address with 0.25 Goerli ETH, swap in the appropriate values for `<your_favorite_goerli_rpc_url>` and `<your_pk>` in this command, open a terminal window, and run the following:
+To deploy an NFT contract to the Goerli testnet, fund an address with 0.25 Goerli ETH, open a terminal window, and run the following commands:
 
-```
+Create a directory and `cd` into it:
+```bash
 mkdir my-shipyard-based-project &&
 cd my-shipyard-based-project &&
-curl -L https://foundry.paradigm.xyz | bash &&
-foundryup &&
-forge init --template projectopensea/shipyard &&
-forge build &&
-export GOERLI_RPC_URL='<your_favorite_goerli_rpc_url>' &&
-export MY_ACTUAL_PK_BE_CAREFUL='<your_pk>' &&
-forge create --rpc-url $GOERLI_RPC_URL \
-    --private-key $MY_ACTUAL_PK_BE_CAREFUL \
-    lib/shipyard-core/src/reference/ExampleNFT.sol:ExampleNFT \
-    --constructor-args "Tutorial Example NFT" "TENFT"
-```
-
-A quick breakdown of each step follows.
-
-Create a directory, `cd` into it, :
-```
-mkdir my-shipyard-based-project &&
-cd my-shipyard-based-project &&
-curl -L https://foundry.paradigm.xyz | bash
 ```
 
 Install the `foundryup` up command and run it, which in turn installs forge, cast, anvil, and chisel:
+```bash
+curl -L https://foundry.paradigm.xyz | bash
 ```
-curl -L https://foundry.paradigm.xyz | bash &&
+
+Follow the onscreen instructions output by the previous command to make Foundryup available in your CLI (or else restart your CLI).
+
+Install forge, cast, anvil, and chisel by running:
+```bash
 foundryup
 ```
 
-Create a new Foundry project based on Shipyard, which also initializes a new git repository.
-```
+Create a new Foundry project based on Shipyard, which also initializes a new git repository, all in the working directory.
+```bash
 forge init --template projectopensea/shipyard
 ```
 
 Install dependencies and compile the contracts:
-```
+```bash
 forge build
 ```
 
-Set up your environment variables:
-```
-export GOERLI_RPC_URL='<your_favorite_goerli_rpc_url>'	 &&
+Set up your environment variables (make sure to swap in the appropriate value for `<your_pk>`):
+```bash
+export GOERLI_RPC_URL='https://eth-goerli.g.alchemy.com/v2/demo' &&
 export MY_ACTUAL_PK_BE_CAREFUL='<your_pk>'
 ```
 
-Run the `forge create` command, which deploys the contract:
+Run the script that deploys [the example contract](src/Dockmaster.sol) and mints an NFT:
+```bash
+forge script script/DeployAndMint.s.sol --private-key \
+    $MY_ACTUAL_PK_BE_CAREFUL --fork-url $GOERLI_RPC_URL --broadcast
 ```
-forge create --rpc-url $GOERLI_RPC_URL \
-    --private-key $MY_ACTUAL_PK_BE_CAREFUL \
-    lib/shipyard-core/src/reference/ExampleNFT.sol:ExampleNFT \
-    --constructor-args "Tutorial Example NFT" "TENFT"
-```
-
-See https://book.getfoundry.sh/reference/forge/forge-create for more information on `forge create`.
 
 Running this command merely deploys the unchanged example NFT contract to a testnet, but it's a good way to check for a properly functioning dev environment.
 
-### Sev env setup and deployment tutorial
-
-See [the tutorial](https://github.com/ProjectOpenSea/shipyard-example-project/tree/main/exampleNFTTutorial) in [the example repo](https://github.com/ProjectOpenSea/shipyard-example-project) for more detail on modifying the example contract, writing tests, deploying, and more.
+See [the tutorial](exampleNftTutorial) for more detail on modifying the example contract, writing tests, deploying, and more.
 
 ### Reinitialize Submodules
 When working across branches with different dependencies, submodules may need to be reinitialized. Run
@@ -114,7 +74,15 @@ When working across branches with different dependencies, submodules may need to
 ```
 
 ### Coverage Reports
-Run
+If you plan on generating coverage reports, you'll need to install [`lcov`](https://github.com/linux-test-project/lcov) as well.
+
+On macOS, you can do this with the following command:
+
+```bash
+brew install lcov
+```
+
+To generate reports, run
 ```bash
 ./coverage-report
 ```

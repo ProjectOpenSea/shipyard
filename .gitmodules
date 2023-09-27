@@ -12,4 +12,4 @@
 	url = https://github.com/projectopensea/seaport-types
 [submodule "lib/shipyard-core"]
 	path = lib/shipyard-core
-	url = https://github.com/projectopensea/shipyard-core
+	url = https://github.com/ProjectOpenSea/shipyard-core
