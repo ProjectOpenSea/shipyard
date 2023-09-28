@@ -39,10 +39,10 @@ contract Dockmaster is AbstractNFT {
             // revert with a custom message.
             revert("Token ID does not exist");
         }
-        return Metadata.base64JsonDataURI(stringURI(tokenId));
+        return _stringURI(tokenId);
     }
 
-    function stringURI(uint256 tokenId) internal view returns (string memory) {
+    function _stringURI(uint256 tokenId) internal view override returns (string memory) {
         return json.objectOf(
             Solarray.strings(
                 json.property("name", string.concat("Dockmaster NFT #", tokenId.toString())),
@@ -52,7 +52,7 @@ contract Dockmaster is AbstractNFT {
                         "This is an NFT on the Dockmaster NFT contract. Its slip number is ", tokenId.toString(), "."
                     )
                 ),
-                json.property("image", Metadata.svgDataURI(_image(tokenId))),
+                json.property("image", Metadata.base64SvgDataURI(_image(tokenId))),
                 _attributes(tokenId)
             )
         );
