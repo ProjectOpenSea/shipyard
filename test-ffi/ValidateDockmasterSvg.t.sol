@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import { Base64 } from "solady/utils/Base64.sol";
-import { Test } from "forge-std/Test.sol";
-import { Dockmaster } from "src/Dockmaster.sol";
+import {Base64} from "solady/utils/Base64.sol";
+import {Test} from "forge-std/Test.sol";
+import {Dockmaster} from "src/Dockmaster.sol";
 
 import "forge-std/console.sol";
 
 contract ValidateDockmasterSvgTest is Test {
     Dockmaster dockmaster;
 
-    string TEMP_JSON_PATH = "./test-ffi/tmp/temp-2.json";
+    string TEMP_JSON_PATH = "./test-ffi/tmp/temp.json";
     string PROCESS_JSON_PATH = "./test-ffi/scripts/process_json.js";
 
     string TEMP_SVG_DIR_PATH_AND_PREFIX = "./test-ffi/tmp/temp-";
@@ -32,20 +32,11 @@ contract ValidateDockmasterSvgTest is Test {
         _populateTempFileWithJson(tokenId);
 
         // Get the output of the NFT's tokenURI function and grab the image from
-        // it.
+        // it, then decode it.
         string memory image = _getImage();
 
         // Write the svg to a file.
-        vm.writeFile(
-            string(
-                abi.encodePacked(
-                    TEMP_SVG_DIR_PATH_AND_PREFIX,
-                    "dockmaster",
-                    TEMP_SVG_FILE_TYPE
-                )
-            ),
-            image
-        );
+        vm.writeFile(string(abi.encodePacked(TEMP_SVG_DIR_PATH_AND_PREFIX, "dockmaster", TEMP_SVG_FILE_TYPE)), image);
 
         _validateSvg("dockmaster");
     }
@@ -54,55 +45,32 @@ contract ValidateDockmasterSvgTest is Test {
     //                          Helpers                                       //
     ////////////////////////////////////////////////////////////////////////////
 
-    function _validateSvg(string memory fileName) internal {
+    function _validateSvg(string memory file) internal {
+        string memory fileName = string(abi.encodePacked(TEMP_SVG_DIR_PATH_AND_PREFIX, file, TEMP_SVG_FILE_TYPE));
+
         // Run the validate_svg.js script on the file to validate the svg.
         string[] memory commandLineInputs = new string[](3);
         commandLineInputs[0] = "node";
         commandLineInputs[1] = VALIDATE_SVG_PATH;
-        commandLineInputs[2] = string(
-            abi.encodePacked(
-                TEMP_SVG_DIR_PATH_AND_PREFIX, fileName, TEMP_SVG_FILE_TYPE
-            )
-        );
+        commandLineInputs[2] = fileName;
 
-        (bool isValid, string memory svg) =
-            abi.decode(vm.ffi(commandLineInputs), (bool, string));
+        (bool isValid, string memory svg) = abi.decode(vm.ffi(commandLineInputs), (bool, string));
 
-        assertEq(
-            isValid,
-            true,
-            string(
-                abi.encodePacked("The svg should be valid. Invalid svg: ", svg)
-            )
-        );
+        assertEq(isValid, true, string(abi.encodePacked("The svg should be valid. Invalid svg: ", svg)));
+
+        // Clear out the files once theyve served their purpose. If the check
+        // above fails, this will not be called and the files will be left
+        // behind in the tmp directory for reference.
+        _cleanUp(fileName);
+        _cleanUp(TEMP_JSON_PATH);
     }
 
     function _populateTempFileWithJson(uint256 tokenId) internal {
         // Get the raw URI response.
         string memory rawUri = dockmaster.tokenURI(tokenId);
-        // Remove the data:application/json;base64, prefix.
-        string memory uri = _cleanedUri(rawUri);
-        // Decode the base64 encoded json.
-        bytes memory decoded = Base64.decode(uri);
 
-        // Write the decoded json to a file.
-        vm.writeFile(TEMP_JSON_PATH, string(decoded));
-    }
-
-    function _cleanedUri(string memory uri)
-        internal
-        pure
-        returns (string memory)
-    {
-        uint256 stringLength;
-
-        // Get the length of the string from the abi encoded version.
-        assembly {
-            stringLength := mload(uri)
-        }
-
-        // Remove the data:application/json;base64, prefix.
-        return _substring(uri, 29, stringLength);
+        // Write the raw URI to a file.
+        vm.writeFile(TEMP_JSON_PATH, rawUri);
     }
 
     function _getImage() internal returns (string memory) {
@@ -120,17 +88,14 @@ contract ValidateDockmasterSvgTest is Test {
         // explicitness.
         commandLineInputs[3] = "--top-level";
 
-        (,, string memory image) =
-            abi.decode(vm.ffi(commandLineInputs), (string, string, string));
+        // Get the raw image.
+        (,, string memory image) = abi.decode(vm.ffi(commandLineInputs), (string, string, string));
 
-        return _cleanedSvg(image);
+        // Return the cleaned and decoded image.
+        return string(Base64.decode(_cleanedSvg(image)));
     }
 
-    function _cleanedSvg(string memory uri)
-        internal
-        pure
-        returns (string memory)
-    {
+    function _cleanedSvg(string memory uri) internal pure returns (string memory) {
         uint256 stringLength;
 
         // Get the length of the string from the abi encoded version.
@@ -138,15 +103,11 @@ contract ValidateDockmasterSvgTest is Test {
             stringLength := mload(uri)
         }
 
-        // Remove the "data:image/svg+xml;" prefix.
-        return _substring(uri, 19, stringLength);
+        // Remove the "data:image/svg+xml;base64," prefix.
+        return _substring(uri, 26, stringLength);
     }
 
-    function _substring(string memory str, uint256 startIndex, uint256 endIndex)
-        public
-        pure
-        returns (string memory)
-    {
+    function _substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
         bytes memory strBytes = bytes(str);
 
         bytes memory result = new bytes(endIndex - startIndex);
@@ -154,5 +115,12 @@ contract ValidateDockmasterSvgTest is Test {
             result[i - startIndex] = strBytes[i];
         }
         return string(result);
+    }
+
+    function _cleanUp(string memory file) internal {
+        if (vm.exists(file)) {
+            vm.removeFile(file);
+        }
+        assertFalse(vm.exists(file));
     }
 }

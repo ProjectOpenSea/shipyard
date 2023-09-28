@@ -32,7 +32,7 @@ Both the local profile (`profile.ffi`) and the CI profile (`profile.ci-ffi`) for
 
 ### Expected local behavior
 
-The `Dockmaster.t.sol` file will call `Dockmaster.sol`'s `tokenURI` function, decode the base64 encoded response, write the decoded version to `./test-ffi/tmp/temp.json`, and then call the `process_json.js` file a few times to get string values. If the expected values and the actual values match, the test will pass. A `temp.json` file will be left behind. You can ignore it or delete it; Forge makes a new one on the fly if it's not there. And it's ignored in the `.gitignore` file, so there's no need to worry about pushing cruft or top secret metadata to a shared or public repo.
+The `Dockmaster.t.sol` file will call `Dockmaster.sol`'s `tokenURI` function, decode the base64 encoded response, write the decoded version to `./test-ffi/tmp/temp.json`, and then call the `process_json.js` file a few times to get string values. If the expected values and the actual values match, the test will pass and the files will be cleaned up. If they fail, a `temp-*.json` file will be left behind for reference. You can ignore it or delete it after you're done inspecting it. Forge makes a new one on the fly if it's not there. And it's ignored in the `.gitignore` file, so there's no need to worry about pushing cruft or top secret metadata to a shared/public repo.
 
 The `ValidateDockmasterSvg.t.sol` file behaves along similar lines, but it checks that the contract is churning out valid svg.
 

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import { Base64 } from "solady/utils/Base64.sol";
-import { Test } from "forge-std/Test.sol";
-import { Dockmaster } from "src/Dockmaster.sol";
+import {Base64} from "solady/utils/Base64.sol";
+import {Test} from "forge-std/Test.sol";
+import {Dockmaster} from "src/Dockmaster.sol";
 import {
     AllowedEditor,
     DisplayType,
@@ -44,38 +44,23 @@ contract DockmasterTest is Test {
 
         _populateTempFileWithJson(tokenId, fileName);
 
-        (string memory name, string memory description, string memory image) =
-            _getNameDescriptionAndImage(fileName);
+        (string memory name, string memory description, string memory image) = _getNameDescriptionAndImage(fileName);
 
-        assertEq(
-            name,
-            _generateExpectedTokenName(tokenId),
-            "The token name should be Dockmaster NFT #<tokenId>"
-        );
+        assertEq(name, _generateExpectedTokenName(tokenId), "The token name should be Dockmaster NFT #<tokenId>");
         assertEq(
             description,
             string(
                 abi.encodePacked(
-                    "This is an NFT on the Dockmaster NFT contract. Its slip number is ",
-                    vm.toString(tokenId),
-                    "."
+                    "This is an NFT on the Dockmaster NFT contract. Its slip number is ", vm.toString(tokenId), "."
                 )
             ),
             "The description should be This is an NFT on the Dockmaster NFT contract..."
         );
-        assertEq(
-            image,
-            _generateExpectedTokenImage(tokenId),
-            "The image is incorrect."
-        );
+        assertEq(image, _generateExpectedTokenImage(tokenId), "The image is incorrect.");
 
         Attribute[] memory attributes = new Attribute[](2);
 
-        attributes[0] = Attribute({
-            attrType: "Slip Number",
-            value: vm.toString(tokenId),
-            displayType: "number"
-        });
+        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
             attrType: "Dock Side",
             value: tokenId % 2 == 0 ? "North" : "South",
@@ -137,26 +122,16 @@ contract DockmasterTest is Test {
         // Check for the new trait.
         Attribute[] memory attributes = new Attribute[](3);
 
-        attributes[0] = Attribute({
-            attrType: "Slip Number",
-            value: vm.toString(tokenId),
-            displayType: "number"
-        });
+        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
             attrType: "Dock Side",
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
-        attributes[2] = Attribute({
-            attrType: "Your Ship Came in",
-            value: "True",
-            displayType: "string"
-        });
+        attributes[2] = Attribute({attrType: "Your Ship Came in", value: "True", displayType: "string"});
 
         // Check for the new trait in True state.
-        _checkAttributesAgainstExpectations(
-            tokenId, attributes, fileNameTrueState
-        );
+        _checkAttributesAgainstExpectations(tokenId, attributes, fileNameTrueState);
 
         // Call the function to add the new trait in False state.
         vm.prank(dockmaster.ownerOf(tokenId));
@@ -171,15 +146,9 @@ contract DockmasterTest is Test {
         _populateTempFileWithJson(tokenId, fileNameFalseState);
 
         // Check for the new trait.
-        attributes[2] = Attribute({
-            attrType: "Your Ship Came in",
-            value: "False",
-            displayType: "string"
-        });
+        attributes[2] = Attribute({attrType: "Your Ship Came in", value: "False", displayType: "string"});
 
-        _checkAttributesAgainstExpectations(
-            tokenId, attributes, fileNameFalseState
-        );
+        _checkAttributesAgainstExpectations(tokenId, attributes, fileNameFalseState);
 
         // Call the function to delete the trait.
         dockmaster.deleteTrait(bytes32("dockmaster.shipIsIn"), tokenId);
@@ -198,41 +167,29 @@ contract DockmasterTest is Test {
         // deleted trait.
         attributes = new Attribute[](2);
 
-        attributes[0] = Attribute({
-            attrType: "Slip Number",
-            value: vm.toString(tokenId),
-            displayType: "number"
-        });
+        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
             attrType: "Dock Side",
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
 
-        _checkAttributesAgainstExpectations(
-            tokenId, attributes, fileNameDeletedState
-        );
+        _checkAttributesAgainstExpectations(tokenId, attributes, fileNameDeletedState);
     }
 
-    function _populateTempFileWithJson(uint256 tokenId, string memory file)
-        internal
-    {
+    ////////////////////////////////////////////////////////////////////////////
+    //                          Helpers                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    function _populateTempFileWithJson(uint256 tokenId, string memory file) internal {
         // Get the raw URI response.
         string memory rawUri = dockmaster.tokenURI(tokenId);
-        // Remove the data:application/json;base64, prefix.
-        string memory uri = _cleanedUri(rawUri);
-        // Decode the base64 encoded json.
-        bytes memory decoded = Base64.decode(uri);
 
         // Write the decoded json to a file.
-        vm.writeFile(file, string(decoded));
+        vm.writeFile(file, rawUri);
     }
 
-    function _cleanedUri(string memory uri)
-        internal
-        pure
-        returns (string memory)
-    {
+    function _cleanedSvg(string memory uri) internal pure returns (string memory) {
         uint256 stringLength;
 
         // Get the length of the string from the abi encoded version.
@@ -240,15 +197,11 @@ contract DockmasterTest is Test {
             stringLength := mload(uri)
         }
 
-        // Remove the data:application/json;base64, prefix.
-        return _substring(uri, 29, stringLength);
+        // Remove the "data:image/svg+xml;base64," prefix.
+        return _substring(uri, 26, stringLength);
     }
 
-    function _substring(string memory str, uint256 startIndex, uint256 endIndex)
-        public
-        pure
-        returns (string memory)
-    {
+    function _substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
         bytes memory strBytes = bytes(str);
 
         bytes memory result = new bytes(endIndex - startIndex);
@@ -260,11 +213,7 @@ contract DockmasterTest is Test {
 
     function _getNameDescriptionAndImage(string memory file)
         internal
-        returns (
-            string memory name,
-            string memory description,
-            string memory image
-        )
+        returns (string memory name, string memory description, string memory image)
     {
         // Run the process_json.js script on the file to extract the values.
         // This will also check for json validity.
@@ -281,18 +230,15 @@ contract DockmasterTest is Test {
         commandLineInputs[3] = "--top-level";
 
         if (vm.exists(file)) {
-            (name, description, image) =
-                abi.decode(vm.ffi(commandLineInputs), (string, string, string));
+            (name, description, image) = abi.decode(vm.ffi(commandLineInputs), (string, string, string));
         }
+
+        image = string(Base64.decode(_cleanedSvg(image)));
     }
 
     function _getAttributeAtIndex(uint256 attributeIndex, string memory file)
         internal
-        returns (
-            string memory attrType,
-            string memory value,
-            string memory displayType
-        )
+        returns (string memory attrType, string memory value, string memory displayType)
     {
         // Run the process_json.js script on the file to extract the values.
         // This will also check for json validity.
@@ -310,68 +256,43 @@ contract DockmasterTest is Test {
         commandLineInputs[4] = vm.toString(attributeIndex);
 
         if (vm.exists(file)) {
-            (attrType, value, displayType) =
-                abi.decode(vm.ffi(commandLineInputs), (string, string, string));
+            (attrType, value, displayType) = abi.decode(vm.ffi(commandLineInputs), (string, string, string));
         } else {
             revert("File does not exist.");
         }
     }
 
-    function _generateExpectedTokenName(uint256 tokenId)
-        internal
-        pure
-        returns (string memory)
-    {
-        return string(
-            abi.encodePacked("Dockmaster NFT #", vm.toString(uint256(tokenId)))
-        );
+    function _generateExpectedTokenName(uint256 tokenId) internal pure returns (string memory) {
+        return string(abi.encodePacked("Dockmaster NFT #", vm.toString(uint256(tokenId))));
     }
 
-    function _generateExpectedTokenImage(uint256 tokenId)
-        internal
-        pure
-        returns (string memory)
-    {
+    function _generateExpectedTokenImage(uint256 tokenId) internal pure returns (string memory) {
         return string(
+            // Some IDE syntax highlighting gets massively confused by this
+            // string. It's fine, though.
             abi.encodePacked(
-                'data:image/svg+xml;<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"500\\" height=\\"500\\" ><rect width=\\"500\\" height=\\"500\\" fill=\\"lightgray\\" /><text x=\\"50%\\" y=\\"50%\\" dominant-baseline=\\"middle\\" text-anchor=\\"middle\\" font-size=\\"48\\" fill=\\"black\\" >',
-                "You're looking at slip #",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect width=\"500\" height=\"500\" fill=\"lightgray\" /><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"48\" fill=\"black\" >",
+                "You\'re looking at slip #",
                 vm.toString(tokenId),
                 "</text></svg>"
             )
         );
     }
 
-    function _checkAttributesAgainstExpectations(
-        uint256 tokenId,
-        Attribute[] memory attributes,
-        string memory file
-    ) internal {
+    function _checkAttributesAgainstExpectations(uint256 tokenId, Attribute[] memory attributes, string memory file)
+        internal
+    {
         for (uint256 i; i < attributes.length; i++) {
-            (
-                string memory attrType,
-                string memory value,
-                string memory displayType
-            ) = _getAttributeAtIndex(i, file);
+            (string memory attrType, string memory value, string memory displayType) = _getAttributeAtIndex(i, file);
 
             assertEq(
-                attrType,
-                attributes[i].attrType,
-                _generateError(
-                    tokenId, i, "attrType inconsistent with expected"
-                )
+                attrType, attributes[i].attrType, _generateError(tokenId, i, "attrType inconsistent with expected")
             );
-            assertEq(
-                value,
-                attributes[i].value,
-                _generateError(tokenId, i, "value inconsistent with expected")
-            );
+            assertEq(value, attributes[i].value, _generateError(tokenId, i, "value inconsistent with expected"));
             assertEq(
                 displayType,
                 attributes[i].displayType,
-                _generateError(
-                    tokenId, i, "displayType inconsistent with expected"
-                )
+                _generateError(tokenId, i, "displayType inconsistent with expected")
             );
         }
 
@@ -381,19 +302,14 @@ contract DockmasterTest is Test {
         _cleanUp(file);
     }
 
-    function _generateError(
-        uint256 tokenId,
-        uint256 traitIndex,
-        string memory message
-    ) internal pure returns (string memory) {
+    function _generateError(uint256 tokenId, uint256 traitIndex, string memory message)
+        internal
+        pure
+        returns (string memory)
+    {
         return string(
             abi.encodePacked(
-                "Error: ",
-                message,
-                " for token ",
-                vm.toString(tokenId),
-                " and trait index ",
-                vm.toString(traitIndex)
+                "Error: ", message, " for token ", vm.toString(tokenId), " and trait index ", vm.toString(traitIndex)
             )
         );
     }
@@ -403,12 +319,7 @@ contract DockmasterTest is Test {
         // state. Using gasLeft() prevents collisions across tests imprefectly
         // but tolerably. The token ID is for reference.
         return string.concat(
-            TEMP_JSON_PATH_PREFIX,
-            "-",
-            vm.toString(gasleft()),
-            "-",
-            vm.toString(tokenId),
-            TEMP_JSON_PATH_FILE_TYPE
+            TEMP_JSON_PATH_PREFIX, "-", vm.toString(gasleft()), "-", vm.toString(tokenId), TEMP_JSON_PATH_FILE_TYPE
         );
     }
 
