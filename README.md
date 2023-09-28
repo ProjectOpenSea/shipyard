@@ -15,6 +15,8 @@ Shipyard comes with some batteries included
   - no extra injected `solc` metadata for simpler Etherscan verification and [deterministic cross-chain deploys via CREATE2](https://0xfoobar.substack.com/p/vanity-addresses).
   - a separate build profile for CI with increased fuzz runs for quicker local iteration, while still ensuring your contracts are well-tested
 
+![](.github/demo.gif)
+
 ## Usage
 
 Shipyard can be used as a starting point or a toolkit in a wide variety of circumstances. In general, if you're building something NFT related, you're likely to find something useful here. For the sake of exploring some of what Shipyard has to offer in concrete terms, here's a guide on how to deploy an NFT contract.
@@ -26,7 +28,7 @@ To deploy an NFT contract to the Goerli testnet, fund an address with 0.25 Goerl
 Create a directory and `cd` into it:
 ```bash
 mkdir my-shipyard-based-project &&
-cd my-shipyard-based-project &&
+cd my-shipyard-based-project
 ```
 
 Install the `foundryup` up command and run it, which in turn installs forge, cast, anvil, and chisel:
@@ -61,6 +63,14 @@ Run the script that deploys [the example contract](src/Dockmaster.sol) and mints
 ```bash
 forge script script/DeployAndMint.s.sol --private-key \
     $MY_ACTUAL_PK_BE_CAREFUL --fork-url $GOERLI_RPC_URL --broadcast
+```
+
+Verify the contract on Etherscan:
+
+```bash
+forge verify-contract <the_target_contract> Dockmaster --watch \ 
+    --constructor-args $(cast abi-encode "constructor(string,string)" \ 
+    "Dockmaster NFT" "DM") --chain 5
 ```
 
 Running this command merely deploys the unchanged example NFT contract to a testnet, but it's a good way to check for a properly functioning dev environment.

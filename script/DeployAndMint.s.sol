@@ -28,10 +28,20 @@ contract DeployScript is Script {
         string memory openSeaPrefix =
             block.chainid == 5 ? "https://testnets.opensea.io/assets/goerli/" : "https://opensea.io/assets/ethereum/";
 
+        string memory etherscanPrefix =
+            block.chainid == 5 ? "https://goerli.etherscan.io/address/" : "https://etherscan.io/address/";
+
         console.log("\x1b[1m%s\x1b[0m", "Deployed an NFT contract at:");
-        console.log(address(targetContract));
+        console.log(string(abi.encodePacked(etherscanPrefix, vm.toString(address(targetContract)))));
         console.log("");
         console.log("\x1b[1m%s\x1b[0m", "Minted a token to the caller:");
         console.log(string(abi.encodePacked(openSeaPrefix, vm.toString(address(targetContract)), "/1")));
+        console.log("");
+        console.log(
+            "\x1b[1m%s\x1b[0m",
+            "Please note that it will take perhaps 15 seconds "
+            "for the transaction to be mined and a few additional seconds for "
+            "OpenSea to pick up the transaction and reflect the existence of the NFT."
+        );
     }
 }
