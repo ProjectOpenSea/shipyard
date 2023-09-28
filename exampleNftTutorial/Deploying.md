@@ -17,6 +17,16 @@ And that's it! See https://book.getfoundry.sh/reference/forge/forge-create for m
 
 Alternatively, you can adapt the [deploy script](../script/Deploy.s.sol) to deploy your contract by importing it and replacing `new Dockmaster` with `new YourContract`. And then you can deploy to Goerli with `forge script script/Deploy.s.sol --private-key $MY_ACTUAL_PK_BE_CAREFUL --fork-url $GOERLI_RPC_URL --broadcast` or mainnet with `forge script script/Deploy.s.sol --private-key $MY_ACTUAL_PK_BE_CAREFUL --fork-url $ETH_RPC_URL --broadcast`.
 
+If you deploy in a way that doesn't come with free verification (for example, by deploying with the Deploy script, the DeployAndMint script, or with the keyless create 2 factory), you can verify your contract with forge. See [the Foundrybook](https://book.getfoundry.sh/reference/forge/forge-verify-contract) for more information.
+
+In this case, it's something along these lines:
+
+```bash
+forge verify-contract <the_target_contract> Dockmaster --watch \ 
+    --constructor-args $(cast abi-encode "constructor(string,string)" \
+    "Dockmaster NFT" "DM") --chain 1
+```
+
 ## Optional bonus step: deploying to a hip, gas-efficient address
 
 Ever notice how Seaport is deployed to [an address](https://etherscan.io/address/0x00000000000000adc04c56bf30ac9d3c0aaf14dc) that starts with a bunch of `0`s? Ever wonder how that works? Ever wonder why?
