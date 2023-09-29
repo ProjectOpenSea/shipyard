@@ -5,6 +5,15 @@ import "forge-std/Test.sol";
 import "../src/Dockmaster.sol";
 import "../src/DockmasterInterface.sol";
 
+/**
+ * @title DockmasterTest
+ * @dev Test contract for the Dockmaster contract. This test suite is not meant
+ *      to be considered exhaustive, just demonstrative. It primarily targets
+ *      the places where Dockmaster behaves differently than AbstractNFT, which
+ *      is tested in shipyard-core. This test suite is supplemented by the
+ *      Dockmaster.t.sol test and the ValidateDockmasterSvg.t.sol test in
+ *      the test-ffi directory.
+ */
 contract DockmasterTest is Test {
     DockmasterInterface public dockmaster;
 
@@ -31,17 +40,29 @@ contract DockmasterTest is Test {
 
     function testHail() public {
         string memory expected = "Ahoy!";
+
+        // See https://book.getfoundry.sh/cheatcodes/expect-emit for more info
+        // on testing for the emission of events.
         vm.expectEmit(false, false, false, true, address(dockmaster));
         emit Hail(expected);
         dockmaster.hail(expected);
     }
 
     function testTokenURI() public {
+        // Verify that Dockmaster's tokenURI function overrides AbstractNFT's
+        // tokenURI function and therefore reverts when the token ID does not
+        // exist.
         vm.expectRevert("Token ID does not exist");
         dockmaster.tokenURI(type(uint128).max);
 
+        // Prank an address with two leading zeros. See
+        // https://book.getfoundry.sh/cheatcodes/prank for more info on
+        // pranking.
         vm.prank(address(0));
         dockmaster.mint(address(this));
+
+        // Check that the tokenURI function does not revert when the token ID
+        // exists.
         uint256 tokenId = dockmaster.currentId() - 1;
         dockmaster.tokenURI(tokenId);
     }

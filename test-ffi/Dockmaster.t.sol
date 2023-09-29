@@ -42,10 +42,13 @@ contract DockmasterTest is Test {
         // deleted at the end of the test.
         string memory fileName = _fileName(tokenId);
 
+        // Populate the temp file with the json.
         _populateTempFileWithJson(tokenId, fileName);
 
+        // Get the name, description, and image from the json.
         (string memory name, string memory description, string memory image) = _getNameDescriptionAndImage(fileName);
 
+        // Check the name, description, and image against expectations.
         assertEq(name, _generateExpectedTokenName(tokenId), "The token name should be Dockmaster NFT #<tokenId>");
         assertEq(
             description,
@@ -58,6 +61,7 @@ contract DockmasterTest is Test {
         );
         assertEq(image, _generateExpectedTokenImage(tokenId), "The image is incorrect.");
 
+        // Set up the expectations for the two static traits.
         Attribute[] memory attributes = new Attribute[](2);
 
         attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
@@ -67,11 +71,14 @@ contract DockmasterTest is Test {
             displayType: "noDisplayType"
         });
 
+        // Check for the two static traits.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileName);
     }
 
     function testDynamicMetadata(uint256 tokenId) public {
         tokenId = bound(tokenId, 1, 10);
+
+        // Create and set a new trait label on the contract.
 
         // Build the trait label.
         string[] memory acceptableValues = new string[](2);
@@ -174,42 +181,13 @@ contract DockmasterTest is Test {
             displayType: "noDisplayType"
         });
 
+        // Check for the two static traits.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileNameDeletedState);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    //                          Helpers                                       //
+    //                         ffi Helpers                                    //
     ////////////////////////////////////////////////////////////////////////////
-
-    function _populateTempFileWithJson(uint256 tokenId, string memory file) internal {
-        // Get the raw URI response.
-        string memory rawUri = dockmaster.tokenURI(tokenId);
-
-        // Write the decoded json to a file.
-        vm.writeFile(file, rawUri);
-    }
-
-    function _cleanedSvg(string memory uri) internal pure returns (string memory) {
-        uint256 stringLength;
-
-        // Get the length of the string from the abi encoded version.
-        assembly {
-            stringLength := mload(uri)
-        }
-
-        // Remove the "data:image/svg+xml;base64," prefix.
-        return _substring(uri, 26, stringLength);
-    }
-
-    function _substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
-        bytes memory strBytes = bytes(str);
-
-        bytes memory result = new bytes(endIndex - startIndex);
-        for (uint256 i = startIndex; i < endIndex; i++) {
-            result[i - startIndex] = strBytes[i];
-        }
-        return string(result);
-    }
 
     function _getNameDescriptionAndImage(string memory file)
         internal
@@ -262,6 +240,56 @@ contract DockmasterTest is Test {
         }
     }
 
+    function _populateTempFileWithJson(uint256 tokenId, string memory file) internal {
+        // Get the raw URI response.
+        string memory rawUri = dockmaster.tokenURI(tokenId);
+
+        // Write the decoded json to a file.
+        vm.writeFile(file, rawUri);
+    }
+
+    function _cleanedSvg(string memory uri) internal pure returns (string memory) {
+        uint256 stringLength;
+
+        // Get the length of the string from the abi encoded version.
+        assembly {
+            stringLength := mload(uri)
+        }
+
+        // Remove the "data:image/svg+xml;base64," prefix.
+        return _substring(uri, 26, stringLength);
+    }
+
+    function _substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
+        bytes memory strBytes = bytes(str);
+
+        bytes memory result = new bytes(endIndex - startIndex);
+        for (uint256 i = startIndex; i < endIndex; i++) {
+            result[i - startIndex] = strBytes[i];
+        }
+        return string(result);
+    }
+
+    function _fileName(uint256 tokenId) internal view returns (string memory) {
+        // Create a new file for each token ID and for each call possible token
+        // state. Using gasLeft() prevents collisions across tests imprefectly
+        // but tolerably. The token ID is for reference.
+        return string.concat(
+            TEMP_JSON_PATH_PREFIX, "-", vm.toString(gasleft()), "-", vm.toString(tokenId), TEMP_JSON_PATH_FILE_TYPE
+        );
+    }
+
+    function _cleanUp(string memory file) internal {
+        if (vm.exists(file)) {
+            vm.removeFile(file);
+        }
+        assertFalse(vm.exists(file));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    //                        Assertion Helpers                               //
+    ////////////////////////////////////////////////////////////////////////////
+
     function _generateExpectedTokenName(uint256 tokenId) internal pure returns (string memory) {
         return string(abi.encodePacked("Dockmaster NFT #", vm.toString(uint256(tokenId))));
     }
@@ -312,21 +340,5 @@ contract DockmasterTest is Test {
                 "Error: ", message, " for token ", vm.toString(tokenId), " and trait index ", vm.toString(traitIndex)
             )
         );
-    }
-
-    function _fileName(uint256 tokenId) internal view returns (string memory) {
-        // Create a new file for each token ID and for each call possible token
-        // state. Using gasLeft() prevents collisions across tests imprefectly
-        // but tolerably. The token ID is for reference.
-        return string.concat(
-            TEMP_JSON_PATH_PREFIX, "-", vm.toString(gasleft()), "-", vm.toString(tokenId), TEMP_JSON_PATH_FILE_TYPE
-        );
-    }
-
-    function _cleanUp(string memory file) internal {
-        if (vm.exists(file)) {
-            vm.removeFile(file);
-        }
-        assertFalse(vm.exists(file));
     }
 }

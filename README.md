@@ -109,17 +109,11 @@ To generate reports, run
     - [ ] Pin to version
   - [x] Solady
     - [ ] Pin to version
-  - [ ] Shipyard-core (dependent on making public)
+  - [x] Shipyard-core
+    - [ ] Pin to version
 - [ ] Include a base cross-chain deploy script
 - [ ] Figure out if there's a way we can make `forge verify-contract` more ergonomic
 - [ ] Top-level helpers:
   - [x] PRB's `reinit-submodules` script as top-level helper
   - [x] `coverage-report` script as top-level helper
   - [ ] TODO: are there security concerns about these?
-
-Copilot suggests:
-- [ ] Additional github actions
-  - [ ] Add a `forge deploy` workflow to the Github Actions
-  - [ ] Add a `forge verify` workflow to the Github Actions
-- [ ] Add a `forge verify` script to the top-level helpers
-- [ ] 
