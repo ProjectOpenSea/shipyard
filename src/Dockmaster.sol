@@ -27,9 +27,10 @@ contract Dockmaster is AbstractNFT {
 
     error UnauthorizedMinter();
 
-    constructor(string memory __name, string memory __symbol) AbstractNFT(__name, __symbol) {
+    constructor(string memory __name, string memory __symbol, address __owner) AbstractNFT(__name, __symbol) {
         _name = __name;
         _symbol = __symbol;
+        _initializeOwner(__owner == address(0) ? msg.sender : __owner);
         emit Hail(string(abi.encodePacked("Hi Mom! I'm deploying my very own ", __name, " contract!")));
     }
 

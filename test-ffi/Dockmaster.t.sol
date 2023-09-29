@@ -27,7 +27,7 @@ contract DockmasterTest is Test {
     string PROCESS_JSON_PATH = "./test-ffi/scripts/process_json.js";
 
     function setUp() public {
-        dockmaster = new Dockmaster('Dockmaster', 'DM');
+        dockmaster = new Dockmaster('Dockmaster', 'DM', address(0));
         for (uint256 i; i < 10; i++) {
             vm.prank(address(0));
             dockmaster.mint(address(this));
