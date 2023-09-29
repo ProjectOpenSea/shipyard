@@ -16,7 +16,13 @@ import "../src/Dockmaster.sol";
  */
 contract DeployScript is Script {
     function run() public {
+        // The deploy and the mint need to happen within the same
+        // `startBroadcast`/`stopBroadcast` block. Otherwise, the script will
+        // fail because Foundry will not recognize that the sender is the owner
+        // of the token contract. See
+        // https://book.getfoundry.sh/cheatcodes/start-broadcast for more info.
         vm.startBroadcast();
+
         // Create a new Dockmaster contract.
         Dockmaster targetContract = new Dockmaster("Dockmaster NFT", "DM");
 
@@ -25,12 +31,14 @@ contract DeployScript is Script {
 
         vm.stopBroadcast();
 
+        // Log some links to Etherscan and OpenSea.
         string memory openSeaPrefix =
             block.chainid == 5 ? "https://testnets.opensea.io/assets/goerli/" : "https://opensea.io/assets/ethereum/";
 
         string memory etherscanPrefix =
             block.chainid == 5 ? "https://goerli.etherscan.io/address/" : "https://etherscan.io/address/";
 
+        // The `"\x1b[1m%s\x1b[0m"` causes the string to be printed in bold.
         console.log("\x1b[1m%s\x1b[0m", "Deployed an NFT contract at:");
         console.log(string(abi.encodePacked(etherscanPrefix, vm.toString(address(targetContract)))));
         console.log("");

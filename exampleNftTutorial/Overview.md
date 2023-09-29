@@ -2,6 +2,7 @@
 
 This mini-tutorial will assume that you're already a software engineer, but that you're not yet steeped in the ways of web 3. If you're trying to learn both at the same time, huge props, but it's probably advisable to start with a more structured and guided tutorial, such as [CryptoZombies](https://cryptozombies.io/).
 
+The Dockmaster contract exists exclusively as a reference. It's not meant to be inherited from or otherwise used in Shipyard projects. It's recommended to leave it in place as you work through the tutorial, then rip out all Dockmaster related contracts and tests. Or, work through the tutorial in a disposable directory, save it for later reference and start your real shipyard based project in a fresh, separate directory, immediately ripping out all Dockmaster related code.
 
 ## Deploying Tutorial Table of Contents
 

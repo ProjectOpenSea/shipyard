@@ -41,7 +41,7 @@ interface DockmasterInterface {
     function balanceOf(address owner) external view returns (uint256 result);
     function cancelOwnershipHandover() external payable;
     function completeOwnershipHandover(address pendingOwner) external payable;
-    function currentId() external view returns (uint256 result);
+    function currentId() external view returns (uint256);
     function deleteTrait(bytes32 traitKey, uint256 tokenId) external;
     function getApproved(uint256 id) external view returns (address result);
     function getCustomEditorAt(uint256 index) external view returns (address);

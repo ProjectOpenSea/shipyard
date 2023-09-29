@@ -47,7 +47,7 @@ I mean, you could just make a `.env` file based on the sample, source it (`. .en
 
 But hold out, it's not time yet! Or go ahead, we're not the deploy police. But you'll definitely feel better about the contract if you run some test, make some innovative or at least fun changes, write some new tests, run them some more, and *then* deploy. Or do it right now. It's comforting to know that it actually works before you invest real time. For real, doing something at your terminal and then seeing a corresponding change on a block explorer is magical. Do it! Or don't. Either way.
 
-You can update your project to use the latest version of shipyard-core by running `forge update lib/shipyard-core`. But make sure you've got everything backed up, because sometimes upgrading dependencies creates issues that are hard to debug.
+You can update your project to use the latest version of shipyard-core by running `forge update shipyard-core`. But make sure you've got everything backed up, because sometimes upgrading dependencies creates issues that are hard to debug.
 
 ## Testing environment setup
 
