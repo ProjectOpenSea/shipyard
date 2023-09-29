@@ -1,6 +1,6 @@
 # Shipyard
 
-Shipyard is a Forge template for smart contract development. See [the tutorial](exampleNftTutorial/Overview.md) for detailed instructions on using Shipyard or jump down to [the usage section](#usage) below for more info on how it works.
+Shipyard is a Forge template for smart contract development. See [the tutorial](exampleNftTutorial/README.md) for detailed instructions on using Shipyard or jump down to [the usage section](#usage) below for more info on how it works.
 
 ## Overview
 Shipyard comes with some batteries included
@@ -23,7 +23,7 @@ Shipyard can be used as a starting point or a toolkit in a wide variety of circu
 
 ### Quick Deploy Guide
 
-To deploy an NFT contract to the Goerli testnet, fund an address with 0.25 Goerli ETH, open a terminal window, and run the following commands:
+To deploy an NFT contract to the Goerli testnet, fund an address with 0.1 Goerli ETH, open a terminal window, and run the following commands:
 
 Create a directory and `cd` into it:
 ```bash
@@ -43,7 +43,7 @@ Install forge, cast, anvil, and chisel by running:
 foundryup
 ```
 
-Create a new Foundry project based on Shipyard, which also initializes a new git repository, all in the working directory.
+Create a new Foundry project based on Shipyard, which also initializes a new git repository, in the working directory.
 ```bash
 forge init --template projectopensea/shipyard
 ```
@@ -111,7 +111,7 @@ To generate reports, run
     - [ ] Pin to version
   - [x] Shipyard-core
     - [ ] Pin to version
-- [ ] Include a base cross-chain deploy script
+- [x] Include a base cross-chain deploy script
 - [ ] Figure out if there's a way we can make `forge verify-contract` more ergonomic
 - [ ] Top-level helpers:
   - [x] PRB's `reinit-submodules` script as top-level helper

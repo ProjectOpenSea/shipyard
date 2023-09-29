@@ -87,9 +87,11 @@ Once you've got a salt that produces a deploy address you're happy with, deployi
 
 Since you're fluent with the Foundry toolset now, you could also use [`cast send`](https://book.getfoundry.sh/reference/cast/cast-send?highlight=cast%20send#cast-send) to send the transaction from the command line:
 
-```log
+```bash
 cast send 0x0000000000FFe8B47B3e2130213B802212439497 "safeCreate2(bytes32, bytes)" 0x... 0x...
 ```
+
+Alternatively, you can adapt the [cross chain deploy script](../script/CrossChainDeploy.s.sol) to deploy.
 
 Finally, verify your contract [on Etherscan](https://etherscan.io/verifyContract) or [using Forge](https://book.getfoundry.sh/forge/deploying?highlight=verify#verifying-a-pre-existing-contract).
 
@@ -97,4 +99,4 @@ To be clear, this is mostly about the cool factor. But it also gives you gas eff
 
 ## Back to the table of contents
 
-[Take it from the top](Overview.md)
+[Take it from the top](README.md) or [view the appendix](Appendix.md), which contains addition info, such as useful aliases and links.

@@ -16,6 +16,6 @@ import "../src/Dockmaster.sol";
 contract DeployScript is Script {
     function run() public {
         vm.broadcast();
-        new Dockmaster("Dockmaster NFT", "DM");
+        new Dockmaster("Dockmaster NFT", "DM", address(0));
     }
 }

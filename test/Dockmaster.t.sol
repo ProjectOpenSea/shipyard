@@ -23,7 +23,7 @@ contract DockmasterTest is Test {
 
     function setUp() public {
         // Deploy a new Dockmaster contract for the test and get its address.
-        Dockmaster dockmasterContract = new Dockmaster("Dockmaster NFT", "DM");
+        Dockmaster dockmasterContract = new Dockmaster("Dockmaster NFT", "DM", address(0));
         address dockmasterAddress = address(dockmasterContract);
         // Set the dockmaster variable to an instance of the Dockmaster
         // interface.
