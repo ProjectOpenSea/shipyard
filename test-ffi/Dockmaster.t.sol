@@ -11,7 +11,7 @@ import {
     EditorsLib,
     FullTraitValue,
     TraitLabel
-} from "lib/shipyard-core/src/dynamic-traits/lib/TraitLabelLib.sol";
+} from "shipyard-core/dynamic-traits/lib/TraitLabelLib.sol";
 
 struct Attribute {
     string attrType;
