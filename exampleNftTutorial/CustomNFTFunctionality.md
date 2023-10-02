@@ -39,6 +39,8 @@ Look at `TraitLabelLib.sol` to get a better sense of how to set those values up.
 
 Then I just call `setTrait` with `bytes32(uint256(0x6d6174657269616c))` as the `traitKey` argument, `1` as the `tokenID` argument, and `bytes32(uint256(<bytes32_value_of_my_trait>))` as the `trait` argument. The `_setTrait` function will store the value (`_traits[tokenId][traitKey] = value;`) and emit a `TraitUpdated` event, to put the world on notice that token ID 1 now has a new trait on it.
 
+See also the [SetTraiLabel](../script/SetTraitLabel.s.sol) and [SetTrait](../script/SetTrait.s.sol) scripts, or the dynamic trait tests in the [Dockmaster ffi test](../test-ffi/Dockmaster.t.sol).
+
 Now is the time to go wild. Make some wild generative art. Create a novel minting mechanic (only contract deployers are eligible?!). Build an AMM into it. Whatever idea brought you here in the first place, here's where you wire it up. Either bolt it on (like `Hail`) or override existing functionality (like `tokenURI`). Your NFT is as interesting as you make it.
 
 ## Next up:

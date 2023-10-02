@@ -47,6 +47,7 @@ interface DockmasterInterface {
     function getCustomEditorAt(uint256 index) external view returns (address);
     function getCustomEditors() external view returns (address[] memory);
     function getCustomEditorsLength() external view returns (uint256);
+    function getShipIsIn(uint256 tokenId) external view returns (bool);
     function getTotalTraitKeys() external view returns (uint256);
     function getTraitKeyAt(uint256 index) external view returns (bytes32 traitKey);
     function getTraitKeys() external view returns (bytes32[] memory traitKeys);
@@ -70,6 +71,7 @@ interface DockmasterInterface {
     function safeTransferFrom(address from, address to, uint256 id) external payable;
     function safeTransferFrom(address from, address to, uint256 id, bytes memory data) external payable;
     function setApprovalForAll(address operator, bool isApproved) external;
+    function setShipIsIn(uint256 tokenId, bool _shipIsIn) external;
     function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait) external;
     function setTraitLabel(bytes32 traitKey, TraitLabel memory _traitLabel) external;
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
