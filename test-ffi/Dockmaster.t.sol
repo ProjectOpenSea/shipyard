@@ -73,9 +73,44 @@ contract DockmasterTest is Test {
 
         // Check for the two static traits.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileName);
+
+        // Set the ship is in trait and check for it.
+        dockmaster.setShipIsIn(tokenId, true);
+
+        _populateTempFileWithJson(tokenId, fileName);
+
+        // Get the name, description, and image from the json.
+        (name, description, image) = _getNameDescriptionAndImage(fileName);
+
+        // Check the name, description, and image against expectations.
+        assertEq(name, _generateExpectedTokenName(tokenId), "The token name should be Dockmaster NFT #<tokenId>");
+        assertEq(
+            description,
+            string(
+                abi.encodePacked(
+                    "This is an NFT on the Dockmaster NFT contract. Its slip number is ", vm.toString(tokenId), "."
+                )
+            ),
+            "The description should be This is an NFT on the Dockmaster NFT contract..."
+        );
+        assertEq(image, _generateExpectedTokenImage(tokenId), "The image is incorrect.");
+
+        // Set up the expectations for the two static traits.
+        attributes = new Attribute[](3);
+
+        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
+        attributes[1] = Attribute({
+            attrType: "Dock Side",
+            value: tokenId % 2 == 0 ? "North" : "South",
+            displayType: "noDisplayType"
+        });
+        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "True", displayType: "string"});
+
+        // Check for the two static traits.
+        _checkAttributesAgainstExpectations(tokenId, attributes, fileName);
     }
 
-    function testDynamicMetadata(uint256 tokenId) public {
+    function testDynamicMetadataDirect(uint256 tokenId) public {
         tokenId = bound(tokenId, 1, 10);
 
         // Create and set a new trait label on the contract.
@@ -92,8 +127,8 @@ contract DockmasterTest is Test {
         Editors editors = EditorsLib.aggregate(allowedEditorRoles);
 
         TraitLabel memory label = TraitLabel({
-            fullTraitKey: "Your Ship Came in",
-            traitLabel: "Your Ship Came in",
+            fullTraitKey: "Your Ship Came In",
+            traitLabel: "Your Ship Came In",
             acceptableValues: acceptableValues,
             fullTraitValues: new FullTraitValue[](0),
             displayType: DisplayType.String,
@@ -135,7 +170,7 @@ contract DockmasterTest is Test {
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
-        attributes[2] = Attribute({attrType: "Your Ship Came in", value: "True", displayType: "string"});
+        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "True", displayType: "string"});
 
         // Check for the new trait in True state.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileNameTrueState);
@@ -153,7 +188,7 @@ contract DockmasterTest is Test {
         _populateTempFileWithJson(tokenId, fileNameFalseState);
 
         // Check for the new trait.
-        attributes[2] = Attribute({attrType: "Your Ship Came in", value: "False", displayType: "string"});
+        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "False", displayType: "string"});
 
         _checkAttributesAgainstExpectations(tokenId, attributes, fileNameFalseState);
 
@@ -294,17 +329,24 @@ contract DockmasterTest is Test {
         return string(abi.encodePacked("Dockmaster NFT #", vm.toString(uint256(tokenId))));
     }
 
-    function _generateExpectedTokenImage(uint256 tokenId) internal pure returns (string memory) {
-        return string(
-            // Some IDE syntax highlighting gets massively confused by this
-            // string. It's fine, though.
+    function _generateExpectedTokenImage(uint256 tokenId) internal view returns (string memory image) {
+        image = string(
             abi.encodePacked(
-                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect width=\"500\" height=\"500\" fill=\"lightgray\" /><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"48\" fill=\"black\" >",
-                "You\'re looking at slip #",
+                // Some IDE syntax highlighting gets massively confused by this
+                // string. It's fine, though.
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect width=\"500\" height=\"500\" fill=\"lightblue\" /><rect x=\"100\" y=\"175\" width=\"300\" height=\"75\" fill=\"sienna\" /><rect x=\"110\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" /><rect x=\"370\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" />",
+                dockmaster.getShipIsIn(tokenId)
+                    ?
+                    "<rect x=\"405\" y=\"125\" width=\"100\" height=\"175\" fill=\"darkslategray\" /><circle cx=\"480\" cy=\"275\" r=\"80\" fill=\"darkslategray\" /><rect x=\"405\" y=\"150\" width=\"100\" height=\"15\" fill=\"maroon\" />"
+                    : "",
+                "<rect y=\"330\" width=\"500\" height=\"170\" fill=\"darkblue\" /><text x=\"50%\" y=\"215\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"48\" fill=\"black\" >"
+                "Slip #",
                 vm.toString(tokenId),
                 "</text></svg>"
             )
         );
+
+        return image;
     }
 
     function _checkAttributesAgainstExpectations(uint256 tokenId, Attribute[] memory attributes, string memory file)
