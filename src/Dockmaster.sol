@@ -4,6 +4,14 @@ pragma solidity ^0.8.17;
 import {LibString} from "solady/utils/LibString.sol";
 import {Base64} from "solady/utils/Base64.sol";
 import {Solarray} from "solarray/Solarray.sol";
+import {
+    AllowedEditor,
+    DisplayType,
+    Editors,
+    EditorsLib,
+    FullTraitValue,
+    TraitLabel
+} from "lib/shipyard-core/src/dynamic-traits/lib/TraitLabelLib.sol";
 import {json} from "lib/shipyard-core/src/onchain/json.sol";
 import {svg} from "lib/shipyard-core/src/onchain/svg.sol";
 import {Metadata, DisplayType} from "lib/shipyard-core/src/onchain/Metadata.sol";
@@ -31,7 +39,9 @@ contract Dockmaster is AbstractNFT {
         _name = __name;
         _symbol = __symbol;
         _initializeOwner(__owner == address(0) ? msg.sender : __owner);
-        emit Hail(string(abi.encodePacked("Hi Mom! I'm deploying my very own ", __name, " contract!")));
+        emit Hail(string(abi.encodePacked("Ahoy! I'm deploying my very own ", __name, " contract!")));
+
+        _initializeShipIsInTraitLabel();
     }
 
     /**
@@ -120,26 +130,100 @@ contract Dockmaster is AbstractNFT {
      *
      * @return The image for the given token ID
      */
-    function _image(uint256 tokenId) internal pure override returns (string memory) {
+    function _image(uint256 tokenId) internal view override returns (string memory) {
         return svg.top({
             props: string.concat(svg.prop("width", "500"), svg.prop("height", "500")),
             children: string.concat(
+                // Sky
                 svg.rect({
-                    props: string.concat(svg.prop("width", "500"), svg.prop("height", "500"), svg.prop("fill", "lightgray"))
+                    props: string.concat(svg.prop("width", "500"), svg.prop("height", "500"), svg.prop("fill", "lightblue"))
                 }),
+                // Dock
+                _generateDock(),
+                // Ship, if it's in.
+                getShipIsIn(tokenId) ? _generateShip() : "",
+                // Water
+                svg.rect({
+                    props: string.concat(
+                        svg.prop("y", "330"), svg.prop("width", "500"), svg.prop("height", "170"), svg.prop("fill", "darkblue")
+                        )
+                }),
+                // Slip number
                 svg.text({
                     props: string.concat(
                         svg.prop("x", "50%"),
-                        svg.prop("y", "50%"),
+                        svg.prop("y", "215"),
                         svg.prop("dominant-baseline", "middle"),
                         svg.prop("text-anchor", "middle"),
                         svg.prop("font-size", "48"),
                         svg.prop("fill", "black")
                         ),
-                    children: string.concat("You're looking at slip #", tokenId.toString())
+                    children: string.concat("Slip #", tokenId.toString())
                 })
                 )
         });
+    }
+
+    function _generateDock() internal pure returns (string memory) {
+        return string.concat(
+            // Dock
+            svg.rect({
+                props: string.concat(
+                    svg.prop("x", "100"),
+                    svg.prop("y", "175"),
+                    svg.prop("width", "300"),
+                    svg.prop("height", "75"),
+                    svg.prop("fill", "sienna")
+                    )
+            }),
+            // Piers
+            svg.rect({
+                props: string.concat(
+                    svg.prop("x", "110"),
+                    svg.prop("y", "250"),
+                    svg.prop("width", "20"),
+                    svg.prop("height", "100"),
+                    svg.prop("fill", "saddlebrown")
+                    )
+            }),
+            svg.rect({
+                props: string.concat(
+                    svg.prop("x", "370"),
+                    svg.prop("y", "250"),
+                    svg.prop("width", "20"),
+                    svg.prop("height", "100"),
+                    svg.prop("fill", "saddlebrown")
+                    )
+            })
+        );
+    }
+
+    function _generateShip() internal pure returns (string memory) {
+        return string.concat(
+            svg.rect({
+                props: string.concat(
+                    svg.prop("x", "405"),
+                    svg.prop("y", "125"),
+                    svg.prop("width", "100"),
+                    svg.prop("height", "175"),
+                    svg.prop("fill", "darkslategray")
+                    )
+            }),
+            svg.circle({
+                props: string.concat(
+                    svg.prop("cx", "480"), svg.prop("cy", "275"), svg.prop("r", "80"), svg.prop("fill", "darkslategray")
+                    )
+            }),
+            svg.rect({
+                props: string.concat(
+                    svg.prop("x", "405"),
+                    svg.prop("y", "150"),
+                    svg.prop("width", "100"),
+                    svg.prop("height", "15"),
+                    svg.prop("fill", "maroon")
+                    )
+            })
+        );
     }
 
     /**
@@ -166,6 +250,9 @@ contract Dockmaster is AbstractNFT {
         unchecked {
             _mint(to, ++currentId);
         }
+
+        // Initialize the shipIsIn trait to false.
+        _setTrait(bytes32("dockmaster.shipIsIn"), currentId, bytes32("False"));
     }
 
     /**
@@ -179,7 +266,55 @@ contract Dockmaster is AbstractNFT {
         return ownerOf(tokenId) == addr || getApproved(tokenId) == addr || isApprovedForAll(ownerOf(tokenId), addr);
     }
 
+    /**
+     * @dev Just a simple function to emit an event specific to Dockmaster.
+     */
     function hail(string memory message) public {
         emit Hail(message);
+    }
+
+    /**
+     * @dev Wrapper around `_setTrait` that sets a specific trait (shipIsIn).
+     */
+    function setShipIsIn(uint256 tokenId, bool _shipIsIn) public {
+        _setTrait(bytes32("dockmaster.shipIsIn"), tokenId, _shipIsIn ? bytes32("True") : bytes32("False"));
+    }
+
+    /**
+     * @dev Getter function for the shipIsIn status.
+     */
+    function getShipIsIn(uint256 tokenId) public view returns (bool) {
+        // Access the trait directly instead of using `getTraitValue` to avoid
+        // the revert if the trait has been deleted.
+        return _traits[tokenId][bytes32("dockmaster.shipIsIn")] == bytes32("True");
+    }
+
+    /**
+     * @dev Internal helper function to set the trait label for the shipIsIn
+     *      trait.
+     */
+    function _initializeShipIsInTraitLabel() internal {
+        // Build the trait label.
+        string[] memory acceptableValues = new string[](2);
+        acceptableValues[0] = "True";
+        acceptableValues[1] = "False";
+
+        AllowedEditor[] memory allowedEditorRoles = new AllowedEditor[](2);
+        allowedEditorRoles[0] = AllowedEditor.Self;
+        allowedEditorRoles[1] = AllowedEditor.TokenOwner;
+
+        Editors editors = EditorsLib.aggregate(allowedEditorRoles);
+
+        TraitLabel memory label = TraitLabel({
+            fullTraitKey: "Your Ship Came In",
+            traitLabel: "Your Ship Came In",
+            acceptableValues: acceptableValues,
+            fullTraitValues: new FullTraitValue[](0),
+            displayType: DisplayType.String,
+            editors: editors,
+            required: false
+        });
+
+        _setTraitLabel(bytes32("dockmaster.shipIsIn"), label);
     }
 }

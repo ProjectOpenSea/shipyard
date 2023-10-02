@@ -5,8 +5,6 @@ import {Base64} from "solady/utils/Base64.sol";
 import {Test} from "forge-std/Test.sol";
 import {Dockmaster} from "src/Dockmaster.sol";
 
-import "forge-std/console.sol";
-
 contract ValidateDockmasterSvgTest is Test {
     Dockmaster dockmaster;
 
