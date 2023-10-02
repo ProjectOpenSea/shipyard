@@ -127,8 +127,8 @@ contract DockmasterTest is Test {
         Editors editors = EditorsLib.aggregate(allowedEditorRoles);
 
         TraitLabel memory label = TraitLabel({
-            fullTraitKey: "Your Ship Came In",
-            traitLabel: "Your Ship Came In",
+            fullTraitKey: "Your Second Ship Came In",
+            traitLabel: "Your Second Ship Came In",
             acceptableValues: acceptableValues,
             fullTraitValues: new FullTraitValue[](0),
             displayType: DisplayType.String,
@@ -139,19 +139,19 @@ contract DockmasterTest is Test {
         // Check label editor auth (onlyOwner).
         vm.prank(address(0));
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        dockmaster.setTraitLabel(bytes32("dockmaster.shipIsIn"), label);
+        dockmaster.setTraitLabel(bytes32("dockmaster.secondShipIsIn"), label);
 
         // Call the function to add the new label.
-        dockmaster.setTraitLabel(bytes32("dockmaster.shipIsIn"), label);
+        dockmaster.setTraitLabel(bytes32("dockmaster.secondShipIsIn"), label);
 
         // Check editor auth (as defined by allowedEditorRoles).
         vm.prank(address(1));
         vm.expectRevert(abi.encodeWithSignature("InsufficientPrivilege()"));
-        dockmaster.setTrait(bytes32("dockmaster.shipIsIn"), tokenId, "True");
+        dockmaster.setTrait(bytes32("dockmaster.secondShipIsIn"), tokenId, "True");
 
         // Call the function to add the new trait. Caller is address(this),
         // which is permitted by `AllowedEditor.Self`.
-        dockmaster.setTrait(bytes32("dockmaster.shipIsIn"), tokenId, "True");
+        dockmaster.setTrait(bytes32("dockmaster.secondShipIsIn"), tokenId, "True");
 
         // Create a file name to use throughtout the test. It will have a form
         // like ./test-ffi/tmp/temp-<gasleft>-<tokenId>.json. It will be
@@ -162,7 +162,7 @@ contract DockmasterTest is Test {
         _populateTempFileWithJson(tokenId, fileNameTrueState);
 
         // Check for the new trait.
-        Attribute[] memory attributes = new Attribute[](3);
+        Attribute[] memory attributes = new Attribute[](4);
 
         attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
@@ -170,14 +170,15 @@ contract DockmasterTest is Test {
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
-        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "True", displayType: "string"});
+        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "False", displayType: "string"});
+        attributes[3] = Attribute({attrType: "Your Second Ship Came In", value: "True", displayType: "string"});
 
         // Check for the new trait in True state.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileNameTrueState);
 
         // Call the function to add the new trait in False state.
         vm.prank(dockmaster.ownerOf(tokenId));
-        dockmaster.setTrait(bytes32("dockmaster.shipIsIn"), tokenId, "False");
+        dockmaster.setTrait(bytes32("dockmaster.secondShipIsIn"), tokenId, "False");
 
         // Create a file name to use throughtout the test. It will have a form
         // like ./test-ffi/tmp/temp-<gasleft>-<tokenId>.json. It will be
@@ -188,12 +189,12 @@ contract DockmasterTest is Test {
         _populateTempFileWithJson(tokenId, fileNameFalseState);
 
         // Check for the new trait.
-        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "False", displayType: "string"});
+        attributes[3] = Attribute({attrType: "Your Second Ship Came In", value: "False", displayType: "string"});
 
         _checkAttributesAgainstExpectations(tokenId, attributes, fileNameFalseState);
 
         // Call the function to delete the trait.
-        dockmaster.deleteTrait(bytes32("dockmaster.shipIsIn"), tokenId);
+        dockmaster.deleteTrait(bytes32("dockmaster.secondShipIsIn"), tokenId);
 
         // Create a file name to use throughtout the test. It will have a form
         // like ./test-ffi/tmp/temp-<gasleft>-<tokenId>.json. It will be
@@ -207,7 +208,7 @@ contract DockmasterTest is Test {
         // might be worth writing an addition script to check the length of the
         // attributes array as a way of checking for the non-existence of the
         // deleted trait.
-        attributes = new Attribute[](2);
+        attributes = new Attribute[](3);
 
         attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
@@ -215,6 +216,7 @@ contract DockmasterTest is Test {
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
+        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "False", displayType: "string"});
 
         // Check for the two static traits.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileNameDeletedState);
@@ -334,12 +336,12 @@ contract DockmasterTest is Test {
             abi.encodePacked(
                 // Some IDE syntax highlighting gets massively confused by this
                 // string. It's fine, though.
-                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect width=\"500\" height=\"500\" fill=\"lightblue\" /><rect x=\"100\" y=\"175\" width=\"300\" height=\"75\" fill=\"sienna\" /><rect x=\"110\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" /><rect x=\"370\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" />",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect x=\"0\" y=\"0\" width=\"500\" height=\"500\" fill=\"lightblue\" /><rect x=\"100\" y=\"175\" width=\"300\" height=\"75\" fill=\"sienna\" /><rect x=\"110\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" /><rect x=\"370\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" />",
                 dockmaster.getShipIsIn(tokenId)
                     ?
                     "<rect x=\"405\" y=\"125\" width=\"100\" height=\"175\" fill=\"darkslategray\" /><circle cx=\"480\" cy=\"275\" r=\"80\" fill=\"darkslategray\" /><rect x=\"405\" y=\"150\" width=\"100\" height=\"15\" fill=\"maroon\" />"
                     : "",
-                "<rect y=\"330\" width=\"500\" height=\"170\" fill=\"darkblue\" /><text x=\"50%\" y=\"215\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"48\" fill=\"black\" >"
+                "<rect x=\"0\" y=\"330\" width=\"500\" height=\"170\" fill=\"darkblue\" /><text x=\"50%\" y=\"215\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"48\" fill=\"black\" >"
                 "Slip #",
                 vm.toString(tokenId),
                 "</text></svg>"

@@ -29,18 +29,29 @@ contract Dockmaster is AbstractNFT {
     using LibString for string;
     using LibString for uint256;
 
+    // Tracks the highest token ID minted so far.
     uint256 public currentId;
 
+    // An event specific to Dockmaster.
     event Hail(string message);
 
+    // An error specific to Dockmaster.
     error UnauthorizedMinter();
 
+    // The name and symbol arguments are required since the contract inherits
+    // from AbstractNFT. The owner argument is optional, but it's necessary when
+    // deploying via the keyless create2 factory.
     constructor(string memory __name, string memory __symbol, address __owner) AbstractNFT(__name, __symbol) {
         _name = __name;
         _symbol = __symbol;
+
+        // Override the default owner initialization.
         _initializeOwner(__owner == address(0) ? msg.sender : __owner);
+
+        // Emit a custom event.
         emit Hail(string(abi.encodePacked("Ahoy! I'm deploying my very own ", __name, " contract!")));
 
+        // Initialize the shipIsIn trait label.
         _initializeShipIsInTraitLabel();
     }
 
@@ -135,19 +146,13 @@ contract Dockmaster is AbstractNFT {
             props: string.concat(svg.prop("width", "500"), svg.prop("height", "500")),
             children: string.concat(
                 // Sky
-                svg.rect({
-                    props: string.concat(svg.prop("width", "500"), svg.prop("height", "500"), svg.prop("fill", "lightblue"))
-                }),
+                _generateStdRectangle("0", "0", "500", "500", "lightblue"),
                 // Dock
                 _generateDock(),
                 // Ship, if it's in.
                 getShipIsIn(tokenId) ? _generateShip() : "",
                 // Water
-                svg.rect({
-                    props: string.concat(
-                        svg.prop("y", "330"), svg.prop("width", "500"), svg.prop("height", "170"), svg.prop("fill", "darkblue")
-                        )
-                }),
+                _generateStdRectangle("0", "330", "500", "170", "darkblue"),
                 // Slip number
                 svg.text({
                     props: string.concat(
@@ -167,63 +172,47 @@ contract Dockmaster is AbstractNFT {
     function _generateDock() internal pure returns (string memory) {
         return string.concat(
             // Dock
-            svg.rect({
-                props: string.concat(
-                    svg.prop("x", "100"),
-                    svg.prop("y", "175"),
-                    svg.prop("width", "300"),
-                    svg.prop("height", "75"),
-                    svg.prop("fill", "sienna")
-                    )
-            }),
+            _generateStdRectangle("100", "175", "300", "75", "sienna"),
             // Piers
-            svg.rect({
-                props: string.concat(
-                    svg.prop("x", "110"),
-                    svg.prop("y", "250"),
-                    svg.prop("width", "20"),
-                    svg.prop("height", "100"),
-                    svg.prop("fill", "saddlebrown")
-                    )
-            }),
-            svg.rect({
-                props: string.concat(
-                    svg.prop("x", "370"),
-                    svg.prop("y", "250"),
-                    svg.prop("width", "20"),
-                    svg.prop("height", "100"),
-                    svg.prop("fill", "saddlebrown")
-                    )
-            })
+            _generateStdRectangle("110", "250", "20", "100", "saddlebrown"),
+            _generateStdRectangle("370", "250", "20", "100", "saddlebrown")
         );
     }
 
     function _generateShip() internal pure returns (string memory) {
         return string.concat(
-            svg.rect({
-                props: string.concat(
-                    svg.prop("x", "405"),
-                    svg.prop("y", "125"),
-                    svg.prop("width", "100"),
-                    svg.prop("height", "175"),
-                    svg.prop("fill", "darkslategray")
-                    )
-            }),
+            // Hull
+            _generateStdRectangle("405", "125", "100", "175", "darkslategray"),
+            // Chine
             svg.circle({
                 props: string.concat(
                     svg.prop("cx", "480"), svg.prop("cy", "275"), svg.prop("r", "80"), svg.prop("fill", "darkslategray")
                     )
             }),
-            svg.rect({
-                props: string.concat(
-                    svg.prop("x", "405"),
-                    svg.prop("y", "150"),
-                    svg.prop("width", "100"),
-                    svg.prop("height", "15"),
-                    svg.prop("fill", "maroon")
-                    )
-            })
+            // Accent stripe
+            _generateStdRectangle("405", "150", "100", "15", "maroon")
         );
+    }
+
+    /**
+     * @dev Helper function to generate a rectangle with less boilerplate.
+     */
+    function _generateStdRectangle(
+        string memory x,
+        string memory y,
+        string memory width,
+        string memory height,
+        string memory fill
+    ) internal pure returns (string memory) {
+        return svg.rect({
+            props: string.concat(
+                svg.prop("x", x),
+                svg.prop("y", y),
+                svg.prop("width", width),
+                svg.prop("height", height),
+                svg.prop("fill", fill)
+                )
+        });
     }
 
     /**
@@ -247,11 +236,14 @@ contract Dockmaster is AbstractNFT {
         // If the null address is supplied, mint to the caller.
         to = to == address(0) ? msg.sender : to;
 
+        // The "unchecked" keyword saves gas, and since it's unlikely that
+        // anyone will mint that many tokens, it's safe to use here.
         unchecked {
+            // Increment the currentId and mint the token.
             _mint(to, ++currentId);
         }
 
-        // Initialize the shipIsIn trait to false.
+        // Initialize the shipIsIn trait for the new token to false.
         _setTrait(bytes32("dockmaster.shipIsIn"), currentId, bytes32("False"));
     }
 
@@ -267,7 +259,7 @@ contract Dockmaster is AbstractNFT {
     }
 
     /**
-     * @dev Just a simple function to emit an event specific to Dockmaster.
+     * @dev Just a simple function to emit a Dockmaster-specific event.
      */
     function hail(string memory message) public {
         emit Hail(message);
@@ -282,6 +274,10 @@ contract Dockmaster is AbstractNFT {
 
     /**
      * @dev Getter function for the shipIsIn status.
+     *
+     * @param tokenId The token ID to get the shipIsIn status for
+     *
+     * @return A boolean for whether the ship is in or not
      */
     function getShipIsIn(uint256 tokenId) public view returns (bool) {
         // Access the trait directly instead of using `getTraitValue` to avoid
@@ -291,7 +287,7 @@ contract Dockmaster is AbstractNFT {
 
     /**
      * @dev Internal helper function to set the trait label for the shipIsIn
-     *      trait.
+     *      trait. It's separated out for readability.
      */
     function _initializeShipIsInTraitLabel() internal {
         // Build the trait label.
