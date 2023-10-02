@@ -11,11 +11,11 @@ import {
     EditorsLib,
     FullTraitValue,
     TraitLabel
-} from "lib/shipyard-core/src/dynamic-traits/lib/TraitLabelLib.sol";
-import {json} from "lib/shipyard-core/src/onchain/json.sol";
-import {svg} from "lib/shipyard-core/src/onchain/svg.sol";
-import {Metadata, DisplayType} from "lib/shipyard-core/src/onchain/Metadata.sol";
-import {AbstractNFT} from "lib/shipyard-core/src/reference/AbstractNFT.sol";
+} from "shipyard-core/dynamic-traits/lib/TraitLabelLib.sol";
+import {json} from "shipyard-core/onchain/json.sol";
+import {svg} from "shipyard-core/onchain/svg.sol";
+import {Metadata, DisplayType} from "shipyard-core/onchain/Metadata.sol";
+import {AbstractNFT} from "shipyard-core/reference/AbstractNFT.sol";
 
 /**
  * @title Dockmaster
