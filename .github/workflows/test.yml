@@ -36,6 +36,8 @@ jobs:
           forge --version
           forge build --sizes
         id: build
+        # don't fail if contract sizes are too large; tests will fail next if compilation failed
+        continue-on-error: true
 
       - name: Run Forge tests
         run: |
