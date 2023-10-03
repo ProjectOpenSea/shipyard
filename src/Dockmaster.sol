@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 import {LibString} from "solady/utils/LibString.sol";
-import {Base64} from "solady/utils/Base64.sol";
 import {Solarray} from "solarray/Solarray.sol";
 import {
     AllowedEditor,
@@ -26,14 +25,10 @@ import {AbstractNFT} from "shipyard-core/reference/AbstractNFT.sol";
  *      the tutorial, then rip out all Dockmaster related contracts and tests.
  */
 contract Dockmaster is AbstractNFT {
-    using LibString for string;
     using LibString for uint256;
 
     // Tracks the highest token ID minted so far.
     uint256 public currentId;
-
-    // An event specific to Dockmaster.
-    event Hail(string message);
 
     // An error specific to Dockmaster.
     error UnauthorizedMinter();
@@ -48,11 +43,26 @@ contract Dockmaster is AbstractNFT {
         // Override the default owner initialization.
         _initializeOwner(__owner == address(0) ? msg.sender : __owner);
 
-        // Emit a custom event.
-        emit Hail(string(abi.encodePacked("Ahoy! I'm deploying my very own ", __name, " contract!")));
-
         // Initialize the shipIsIn trait label.
-        _initializeShipIsInTraitLabel();
+        string[] memory acceptableValues = new string[](2);
+        acceptableValues[0] = "True";
+        acceptableValues[1] = "False";
+
+        AllowedEditor[] memory allowedEditorRoles = new AllowedEditor[](1);
+        allowedEditorRoles[0] = AllowedEditor.TokenOwner;
+
+        _setTraitLabel(
+            bytes32("dockmaster.shipIsIn"),
+            TraitLabel({
+                fullTraitKey: "",
+                traitLabel: "Ship Is In",
+                acceptableValues: acceptableValues,
+                fullTraitValues: new FullTraitValue[](0),
+                displayType: DisplayType.String,
+                editors: EditorsLib.aggregate(allowedEditorRoles),
+                required: false
+            })
+        );
     }
 
     /**
@@ -66,48 +76,6 @@ contract Dockmaster is AbstractNFT {
      * @return The URI for the given token ID
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        if (tokenId > currentId) {
-            // The exisintg TokenDoesNotExist error would be better, this is
-            // just to demonstrate a revert with a custom message.
-            revert("Token ID does not exist");
-        }
-        return _stringURI(tokenId);
-    }
-
-    /**
-     * @dev Internal helper function to get the raw JSON metadata for a given
-     *      token ID. If this function is not overridden, the default "Example
-     *      NFT" metadata will be returned.
-     *
-     * @param tokenId The token ID to get URI for
-     *
-     * @return The raw JSON metadata for the given token ID
-     */
-    function _stringURI(uint256 tokenId) internal view override returns (string memory) {
-        return json.objectOf(
-            Solarray.strings(
-                json.property("name", string.concat("Dockmaster NFT #", tokenId.toString())),
-                json.property(
-                    "description",
-                    string.concat(
-                        "This is an NFT on the Dockmaster NFT contract. Its slip number is ", tokenId.toString(), "."
-                    )
-                ),
-                // Note that the image is a base64-encoded SVG
-                json.property("image", Metadata.base64SvgDataURI(_image(tokenId))),
-                _attributes(tokenId)
-            )
-        );
-    }
-
-    /**
-     * @dev Helper function to get both the static and dynamic attributes for a
-     *      given token ID. It's pulled out for readability and to avoid stack
-     *      pressure issues.
-     *
-     * @param tokenId The token ID to get the static and dynamic attributes for
-     */
-    function _attributes(uint256 tokenId) internal view override returns (string memory) {
         string[] memory staticTraits = _staticAttributes(tokenId);
         string[] memory dynamicTraits = _dynamicAttributes(tokenId);
         string[] memory combined = new string[](staticTraits.length + dynamicTraits.length);
@@ -117,7 +85,16 @@ contract Dockmaster is AbstractNFT {
         for (uint256 i = 0; i < dynamicTraits.length; i++) {
             combined[staticTraits.length + i] = dynamicTraits[i];
         }
-        return json.rawProperty("attributes", json.arrayOf(combined));
+
+        return json.objectOf(
+            Solarray.strings(
+                json.property("name", string.concat("Slip #", tokenId.toString())),
+                json.property("description", string.concat("Slip #", tokenId.toString(), ".")),
+                // Note that the image is a base64-encoded SVG
+                json.property("image", Metadata.base64SvgDataURI(_image(tokenId))),
+                json.rawProperty("attributes", json.arrayOf(combined))
+            )
+        );
     }
 
     /**
@@ -129,7 +106,7 @@ contract Dockmaster is AbstractNFT {
      */
     function _staticAttributes(uint256 tokenId) internal view virtual override returns (string[] memory) {
         return Solarray.strings(
-            Metadata.attribute({traitType: "Slip Number", value: tokenId.toString(), displayType: DisplayType.Number}),
+            Metadata.attribute({traitType: "Slip #", value: tokenId.toString(), displayType: DisplayType.Number}),
             Metadata.attribute({traitType: "Dock Side", value: tokenId % 2 == 0 ? "North" : "South"})
         );
     }
@@ -142,26 +119,29 @@ contract Dockmaster is AbstractNFT {
      * @return The image for the given token ID
      */
     function _image(uint256 tokenId) internal view override returns (string memory) {
+        // Declare a variable for "500" to get below the contract size limit.
+        string memory fiveHundred = "500";
+
         return svg.top({
-            props: string.concat(svg.prop("width", "500"), svg.prop("height", "500")),
+            props: string.concat(svg.prop("width", fiveHundred), svg.prop("height", fiveHundred)),
             children: string.concat(
                 // Sky
-                _generateStdRectangle("0", "0", "500", "500", "lightblue"),
+                _generateRect("0", "0", fiveHundred, fiveHundred, "#add8e6"),
                 // Dock
-                _generateDock(),
+                _generateRect("100", "175", "300", "175", "#a0522d"),
+                // Under the booooaaarrrddwalk
+                _generateRect("120", "250", "260", "80", "#add8e6"),
                 // Ship, if it's in.
                 getShipIsIn(tokenId) ? _generateShip() : "",
                 // Water
-                _generateStdRectangle("0", "330", "500", "170", "darkblue"),
+                _generateRect("0", "330", fiveHundred, "170", "#00008b"),
                 // Slip number
                 svg.text({
                     props: string.concat(
                         svg.prop("x", "50%"),
-                        svg.prop("y", "215"),
-                        svg.prop("dominant-baseline", "middle"),
+                        svg.prop("y", "225"),
                         svg.prop("text-anchor", "middle"),
-                        svg.prop("font-size", "48"),
-                        svg.prop("fill", "black")
+                        svg.prop("font-size", "48")
                         ),
                     children: string.concat("Slip #", tokenId.toString())
                 })
@@ -169,35 +149,25 @@ contract Dockmaster is AbstractNFT {
         });
     }
 
-    function _generateDock() internal pure returns (string memory) {
-        return string.concat(
-            // Dock
-            _generateStdRectangle("100", "175", "300", "75", "sienna"),
-            // Piers
-            _generateStdRectangle("110", "250", "20", "100", "saddlebrown"),
-            _generateStdRectangle("370", "250", "20", "100", "saddlebrown")
-        );
-    }
-
     function _generateShip() internal pure returns (string memory) {
         return string.concat(
             // Hull
-            _generateStdRectangle("405", "125", "100", "175", "darkslategray"),
+            _generateRect("405", "125", "100", "175", "#2f4f4f"),
             // Chine
             svg.circle({
                 props: string.concat(
-                    svg.prop("cx", "480"), svg.prop("cy", "275"), svg.prop("r", "80"), svg.prop("fill", "darkslategray")
+                    svg.prop("cx", "480"), svg.prop("cy", "275"), svg.prop("r", "80"), svg.prop("fill", "#2f4f4f")
                     )
             }),
             // Accent stripe
-            _generateStdRectangle("405", "150", "100", "15", "maroon")
+            _generateRect("405", "150", "100", "15", "#800000")
         );
     }
 
     /**
      * @dev Helper function to generate a rectangle with less boilerplate.
      */
-    function _generateStdRectangle(
+    function _generateRect(
         string memory x,
         string memory y,
         string memory width,
@@ -228,13 +198,9 @@ contract Dockmaster is AbstractNFT {
     function mint(address to) public {
         // Only the contract owner and addresses with the two leading zeros can
         // mint tokens.
-        bool callerFirstByteIsNonZero = (uint256(uint160(msg.sender)) >> (160 - 8)) > 0;
-        if (callerFirstByteIsNonZero && msg.sender != owner()) {
+        if (((uint256(uint160(msg.sender)) >> (160 - 8)) > 0) && msg.sender != owner()) {
             revert UnauthorizedMinter();
         }
-
-        // If the null address is supplied, mint to the caller.
-        to = to == address(0) ? msg.sender : to;
 
         // The "unchecked" keyword saves gas, and since it's unlikely that
         // anyone will mint that many tokens, it's safe to use here.
@@ -244,7 +210,7 @@ contract Dockmaster is AbstractNFT {
         }
 
         // Initialize the shipIsIn trait for the new token to false.
-        _setTrait(bytes32("dockmaster.shipIsIn"), currentId, bytes32("False"));
+        setShipIsIn(currentId, false);
     }
 
     /**
@@ -255,14 +221,7 @@ contract Dockmaster is AbstractNFT {
      *      "Dockmaster" should be marked as abstract."
      */
     function _isOwnerOrApproved(uint256 tokenId, address addr) internal view override returns (bool) {
-        return ownerOf(tokenId) == addr || getApproved(tokenId) == addr || isApprovedForAll(ownerOf(tokenId), addr);
-    }
-
-    /**
-     * @dev Just a simple function to emit a Dockmaster-specific event.
-     */
-    function hail(string memory message) public {
-        emit Hail(message);
+        return ownerOf(tokenId) == addr;
     }
 
     /**
@@ -283,34 +242,5 @@ contract Dockmaster is AbstractNFT {
         // Access the trait directly instead of using `getTraitValue` to avoid
         // the revert if the trait has been deleted.
         return _traits[tokenId][bytes32("dockmaster.shipIsIn")] == bytes32("True");
-    }
-
-    /**
-     * @dev Internal helper function to set the trait label for the shipIsIn
-     *      trait. It's separated out for readability.
-     */
-    function _initializeShipIsInTraitLabel() internal {
-        // Build the trait label.
-        string[] memory acceptableValues = new string[](2);
-        acceptableValues[0] = "True";
-        acceptableValues[1] = "False";
-
-        AllowedEditor[] memory allowedEditorRoles = new AllowedEditor[](2);
-        allowedEditorRoles[0] = AllowedEditor.Self;
-        allowedEditorRoles[1] = AllowedEditor.TokenOwner;
-
-        Editors editors = EditorsLib.aggregate(allowedEditorRoles);
-
-        TraitLabel memory label = TraitLabel({
-            fullTraitKey: "Your Ship Came In",
-            traitLabel: "Your Ship Came In",
-            acceptableValues: acceptableValues,
-            fullTraitValues: new FullTraitValue[](0),
-            displayType: DisplayType.String,
-            editors: editors,
-            required: false
-        });
-
-        _setTraitLabel(bytes32("dockmaster.shipIsIn"), label);
     }
 }
