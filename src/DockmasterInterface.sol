@@ -11,7 +11,6 @@ pragma solidity ^0.8.17;
 interface DockmasterInterface {
     event Approval(address indexed owner, address indexed account, uint256 indexed id);
     event ApprovalForAll(address indexed owner, address indexed operator, bool isApproved);
-    event Hail(string message);
     event OwnershipHandoverCanceled(address indexed pendingOwner);
     event OwnershipHandoverRequested(address indexed pendingOwner);
     event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
@@ -57,7 +56,6 @@ interface DockmasterInterface {
         external
         view
         returns (bytes32[] memory traitValues);
-    function hail(string memory message) external;
     function isApprovedForAll(address owner, address operator) external view returns (bool);
     function isCustomEditor(address editor) external view returns (bool);
     function mint(address to) external;

@@ -49,22 +49,18 @@ contract DockmasterTest is Test {
         (string memory name, string memory description, string memory image) = _getNameDescriptionAndImage(fileName);
 
         // Check the name, description, and image against expectations.
-        assertEq(name, _generateExpectedTokenName(tokenId), "The token name should be Dockmaster NFT #<tokenId>");
+        assertEq(name, _generateExpectedTokenName(tokenId), "The token name should be Slip #<tokenId>");
         assertEq(
             description,
-            string(
-                abi.encodePacked(
-                    "This is an NFT on the Dockmaster NFT contract. Its slip number is ", vm.toString(tokenId), "."
-                )
-            ),
-            "The description should be This is an NFT on the Dockmaster NFT contract..."
+            string(abi.encodePacked("Slip #", vm.toString(tokenId), ".")),
+            "The description should be Slip #"
         );
         assertEq(image, _generateExpectedTokenImage(tokenId), "The image is incorrect.");
 
         // Set up the expectations for the two static traits.
         Attribute[] memory attributes = new Attribute[](2);
 
-        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
+        attributes[0] = Attribute({attrType: "Slip #", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
             attrType: "Dock Side",
             value: tokenId % 2 == 0 ? "North" : "South",
@@ -86,25 +82,21 @@ contract DockmasterTest is Test {
         assertEq(name, _generateExpectedTokenName(tokenId), "The token name should be Dockmaster NFT #<tokenId>");
         assertEq(
             description,
-            string(
-                abi.encodePacked(
-                    "This is an NFT on the Dockmaster NFT contract. Its slip number is ", vm.toString(tokenId), "."
-                )
-            ),
-            "The description should be This is an NFT on the Dockmaster NFT contract..."
+            string(abi.encodePacked("Slip #", vm.toString(tokenId), ".")),
+            "The description should be Slip #"
         );
         assertEq(image, _generateExpectedTokenImage(tokenId), "The image is incorrect.");
 
         // Set up the expectations for the two static traits.
         attributes = new Attribute[](3);
 
-        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
+        attributes[0] = Attribute({attrType: "Slip #", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
             attrType: "Dock Side",
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
-        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "True", displayType: "string"});
+        attributes[2] = Attribute({attrType: "Ship Is In", value: "True", displayType: "string"});
 
         // Check for the two static traits.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileName);
@@ -164,13 +156,13 @@ contract DockmasterTest is Test {
         // Check for the new trait.
         Attribute[] memory attributes = new Attribute[](4);
 
-        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
+        attributes[0] = Attribute({attrType: "Slip #", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
             attrType: "Dock Side",
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
-        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "False", displayType: "string"});
+        attributes[2] = Attribute({attrType: "Ship Is In", value: "False", displayType: "string"});
         attributes[3] = Attribute({attrType: "Your Second Ship Came In", value: "True", displayType: "string"});
 
         // Check for the new trait in True state.
@@ -210,13 +202,13 @@ contract DockmasterTest is Test {
         // deleted trait.
         attributes = new Attribute[](3);
 
-        attributes[0] = Attribute({attrType: "Slip Number", value: vm.toString(tokenId), displayType: "number"});
+        attributes[0] = Attribute({attrType: "Slip #", value: vm.toString(tokenId), displayType: "number"});
         attributes[1] = Attribute({
             attrType: "Dock Side",
             value: tokenId % 2 == 0 ? "North" : "South",
             displayType: "noDisplayType"
         });
-        attributes[2] = Attribute({attrType: "Your Ship Came In", value: "False", displayType: "string"});
+        attributes[2] = Attribute({attrType: "Ship Is In", value: "False", displayType: "string"});
 
         // Check for the two static traits.
         _checkAttributesAgainstExpectations(tokenId, attributes, fileNameDeletedState);
@@ -328,7 +320,7 @@ contract DockmasterTest is Test {
     ////////////////////////////////////////////////////////////////////////////
 
     function _generateExpectedTokenName(uint256 tokenId) internal pure returns (string memory) {
-        return string(abi.encodePacked("Dockmaster NFT #", vm.toString(uint256(tokenId))));
+        return string(abi.encodePacked("Slip #", vm.toString(uint256(tokenId))));
     }
 
     function _generateExpectedTokenImage(uint256 tokenId) internal view returns (string memory image) {
@@ -336,12 +328,12 @@ contract DockmasterTest is Test {
             abi.encodePacked(
                 // Some IDE syntax highlighting gets massively confused by this
                 // string. It's fine, though.
-                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect x=\"0\" y=\"0\" width=\"500\" height=\"500\" fill=\"lightblue\" /><rect x=\"100\" y=\"175\" width=\"300\" height=\"75\" fill=\"sienna\" /><rect x=\"110\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" /><rect x=\"370\" y=\"250\" width=\"20\" height=\"100\" fill=\"saddlebrown\" />",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect x=\"0\" y=\"0\" width=\"500\" height=\"500\" fill=\"#add8e6\" /><rect x=\"100\" y=\"175\" width=\"300\" height=\"175\" fill=\"#a0522d\" /><rect x=\"120\" y=\"250\" width=\"260\" height=\"80\" fill=\"#add8e6\" />",
                 dockmaster.getShipIsIn(tokenId)
                     ?
-                    "<rect x=\"405\" y=\"125\" width=\"100\" height=\"175\" fill=\"darkslategray\" /><circle cx=\"480\" cy=\"275\" r=\"80\" fill=\"darkslategray\" /><rect x=\"405\" y=\"150\" width=\"100\" height=\"15\" fill=\"maroon\" />"
+                    "<rect x=\"405\" y=\"125\" width=\"100\" height=\"175\" fill=\"#2f4f4f\" /><circle cx=\"480\" cy=\"275\" r=\"80\" fill=\"#2f4f4f\" /><rect x=\"405\" y=\"150\" width=\"100\" height=\"15\" fill=\"#800000\" />"
                     : "",
-                "<rect x=\"0\" y=\"330\" width=\"500\" height=\"170\" fill=\"darkblue\" /><text x=\"50%\" y=\"215\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"48\" fill=\"black\" >"
+                "<rect x=\"0\" y=\"330\" width=\"500\" height=\"170\" fill=\"#00008b\" /><text x=\"50%\" y=\"225\" text-anchor=\"middle\" font-size=\"48\" >"
                 "Slip #",
                 vm.toString(tokenId),
                 "</text></svg>"
