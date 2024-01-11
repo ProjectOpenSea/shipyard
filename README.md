@@ -69,8 +69,8 @@ Verify the contract on Etherscan:
 
 ```bash
 forge verify-contract <the_target_contract> Dockmaster --watch \ 
-    --constructor-args $(cast abi-encode "constructor(string,string)" \ 
-    "Dockmaster NFT" "DM") --chain 5
+    --constructor-args $(cast abi-encode "constructor(string,string,address)" \ 
+    "Dockmaster NFT" "DM" "0x0000000000000000000000000000000000000000") --chain 5
 ```
 
 Running this command merely deploys the unchanged example NFT contract to a testnet, but it's a good way to check for a properly functioning dev environment.
@@ -96,24 +96,3 @@ To generate reports, run
 ```bash
 ./coverage-report
 ```
-
-
-
-## Roadmap
-
-- [x] Configure test.yml to run `forge test` on every push to main and PR
-- [x] Add a `forge fmt --check` workflow to the Github Actions
-- [x] Add an optional `forge fmt` fix workflow to the Github Actions
-- [ ]  Include base dependencies
-  - [x] OZ
-    - [ ] Pin to version
-  - [x] Solady
-    - [ ] Pin to version
-  - [x] Shipyard-core
-    - [ ] Pin to version
-- [x] Include a base cross-chain deploy script
-- [ ] Figure out if there's a way we can make `forge verify-contract` more ergonomic
-- [ ] Top-level helpers:
-  - [x] PRB's `reinit-submodules` script as top-level helper
-  - [x] `coverage-report` script as top-level helper
-  - [ ] TODO: are there security concerns about these?
