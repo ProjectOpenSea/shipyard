@@ -95,7 +95,7 @@ Alternatively, you can adapt the [cross chain deploy script](../script/CrossChai
 
 Finally, verify your contract [on Etherscan](https://etherscan.io/verifyContract) or [using Forge](https://book.getfoundry.sh/forge/deploying?highlight=verify#verifying-a-pre-existing-contract).
 
-To be clear, this is mostly about the cool factor. But it also gives you gas efficiency benefits, sceurity benefits, cross-chain consistency, and more. And since you know the address before you deploy, you can code it into your frontend, etc. before you've revealed it to the rest of the world.
+To be clear, this is mostly about the cool factor. But it also gives you gas efficiency benefits, security benefits, cross-chain consistency, and more. And since you know the address before you deploy, you can code it into your frontend, etc. before you've revealed it to the rest of the world.
 
 ## Back to the table of contents
 
