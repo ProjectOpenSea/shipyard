@@ -142,10 +142,10 @@ contract Dockmaster is AbstractNFT {
                         svg.prop("y", "225"),
                         svg.prop("text-anchor", "middle"),
                         svg.prop("font-size", "48")
-                        ),
+                    ),
                     children: string.concat("Slip #", tokenId.toString())
                 })
-                )
+            )
         });
     }
 
@@ -157,7 +157,7 @@ contract Dockmaster is AbstractNFT {
             svg.circle({
                 props: string.concat(
                     svg.prop("cx", "480"), svg.prop("cy", "275"), svg.prop("r", "80"), svg.prop("fill", "#2f4f4f")
-                    )
+                )
             }),
             // Accent stripe
             _generateRect("405", "150", "100", "15", "#800000")
@@ -181,7 +181,7 @@ contract Dockmaster is AbstractNFT {
                 svg.prop("width", width),
                 svg.prop("height", height),
                 svg.prop("fill", fill)
-                )
+            )
         });
     }
 
