@@ -3,6 +3,8 @@
 Shipyard is a Forge template for smart contract development. See [the tutorial](exampleNftTutorial/README.md) for detailed instructions on using Shipyard or jump down to [the usage section](#usage) below for more info on how it works.
 
 ## Overview
+
+> Audit note: documentation-only change for issue_comment workflow reachability testing.
 Shipyard comes with some batteries included
 
 - [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts), [Solady](https://github.com/Vectorized/solady), and Shipyard-core smart contracts as dependencies, ready with [`solc` remappings](https://docs.soliditylang.org/en/latest/path-resolution.html#import-remapping) so you can jump into writing your own contracts right away
