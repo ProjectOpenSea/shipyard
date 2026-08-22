@@ -7,6 +7,10 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+# Read-only. This workflow reports on formatting, it does not change anything.
+permissions:
+  contents: read
+
 env:
   FOUNDRY_PROFILE: ci
 
@@ -18,20 +22,23 @@ jobs:
     name: Foundry project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      # No `ref:` override. On a pull_request event checkout defaults to the
+      # merge commit, which is what CI should be judging. Naming
+      # `github.head_ref` instead resolves a bare branch name against this
+      # repository, so a fork PR whose branch is called `main` gets this
+      # repository's `main` checked out rather than the contributor's code.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1.9.1
         with:
           version: nightly
 
-      - name: Lint
+      - name: Check formatting
         run: |
-          echo "Running forge fmt --check"
-          if ! forge fmt --check; then 
-            echo "The linting check failed. You can fix it locally with 'forge fmt' and then push. Maintainers can also comment '!fix' on a pull request whose branch lives in this repository to have a GitHub action do it."
+          if ! forge fmt --check; then
+            echo "::error::Formatting check failed. Run 'forge fmt' locally and commit the result."
             exit 1
           fi
