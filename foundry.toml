@@ -8,8 +8,14 @@ remappings = [
     'forge-std/=lib/forge-std/src',
     'solady/=lib/solady/src/',
     'solady-test/=lib/solady/test/',
-    'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
+    # shipyard-core imports OpenZeppelin both as "openzeppelin-contracts/token/..."
+    # and as "openzeppelin-contracts/contracts/token/...", so both prefixes are
+    # mapped. Forge's import resolver takes the first remapping that matches, so
+    # the longer prefix has to come first; reversing these two lines makes
+    # "openzeppelin-contracts/contracts/..." resolve to a doubled
+    # lib/openzeppelin-contracts/contracts/contracts/... path and the build fails.
     'openzeppelin-contracts/contracts/=lib/openzeppelin-contracts/contracts/',
+    'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
     'shipyard-core/=lib/shipyard-core/src/',
     'seaport-types/=lib/seaport-types/src/'
 ]
