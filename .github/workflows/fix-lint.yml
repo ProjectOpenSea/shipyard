@@ -4,52 +4,116 @@ on:
   issue_comment:
     types: [created]
 
-# Down scope as necessary via https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
-permissions:
-  checks: write
-  contents: write
-  pull-requests: write
+# An issue_comment event always runs in the base repository context, on the
+# default branch's copy of this file, with this repository's GITHUB_TOKEN. It
+# never runs in the context of the pull request being commented on. Anything
+# this workflow checks out therefore runs as trusted code, so the job below is
+# restricted to commenters with write access and to head branches that live in
+# this repository.
+permissions: {}
 
 jobs:
   run-linters:
     name: Run linters
-    if: github.event.issue.pull_request && ${{ github.event.comment.body == '!fix' }}
+    # Keep the whole condition inside a single expression. A value that mixes
+    # bare operands with ${{ ... }} is compiled into a format() call whose
+    # result is a non-empty string, and a non-empty string is truthy, so such a
+    # condition never rejects anything.
+    if: >-
+      github.event.issue.pull_request != null
+      && github.event.comment.body == '!fix'
+      && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: read
+    concurrency:
+      group: autofix-linting-${{ github.event.issue.number }}
+      cancel-in-progress: false
 
     steps:
-      - name: GetBranch
-        id: 'get-branch'
-        run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
+      - name: Resolve the pull request head branch
+        id: get-branch
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           PR_NO: ${{ github.event.issue.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+
+          pr_json="$(gh pr view "$PR_NO" --repo "$REPO" --json headRefName,isCrossRepository)"
+          branch="$(jq -r '.headRefName // ""' <<<"$pr_json")"
+          cross_repository="$(jq -r '.isCrossRepository' <<<"$pr_json")"
+
+          if [[ -z "$branch" ]]; then
+            echo "::error::Could not resolve the head branch of PR #${PR_NO}."
+            exit 1
+          fi
+
+          # A fork's head branch cannot be pushed to with this repository's
+          # GITHUB_TOKEN, and checking it out here would execute fork code in a
+          # trusted context. actions/checkout refuses that only for
+          # pull_request_target and workflow_run, so refuse it explicitly.
+          # Without this check a fork branch that shares a name with a branch
+          # here (for example "main") is silently resolved against this
+          # repository and formatted and pushed instead.
+          if [[ "$cross_repository" != "false" ]]; then
+            echo "::error::PR #${PR_NO} comes from a fork. Autofix only runs on branches in ${REPO}; run 'forge fmt' locally and push instead."
+            exit 1
+          fi
+
+          if [[ "$branch" == "$DEFAULT_BRANCH" ]]; then
+            echo "::error::Refusing to autofix ${DEFAULT_BRANCH}."
+            exit 1
+          fi
+
+          # git accepts ';', '$', backticks and similar in a branch name. None
+          # of them reach a shell below, but keeping the name to an ordinary
+          # character set means a surprising name fails loudly here rather than
+          # somewhere later.
+          if [[ ! "$branch" =~ ^[A-Za-z0-9._/-]+$ ]] || ! git check-ref-format "refs/heads/$branch"; then
+            echo "::error::Refusing to act on head branch name '${branch}'."
+            exit 1
+          fi
+
+          printf 'branch=%s\n' "$branch" >> "$GITHUB_OUTPUT"
 
       - name: Check out Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ steps.get-branch.outputs.branch }}
 
-
       - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1.9.1
         with:
           version: nightly
-      
+
       - name: Lint
+        env:
+          BRANCH_NAME: ${{ steps.get-branch.outputs.branch }}
         run: |
+          set -euo pipefail
+
           forge fmt
-          pwd
-          if [[ `git diff --exit-code` ]]; then        
-            git config --local user.name 'GitHub Actions Bot'
-            git config --local user.email '<>'
-            git add .
-            git commit -m "Github Actions automatically updated formatting with forge fmt"
-            COMMIT_HASH=$(git rev-parse HEAD)
-            echo "# Github Actions automatically updated formatting with forge fmt\n$COMMIT_HASH" >> .git-blame-ignore-revs
-            git add .git-blame-ignore-revs
-            git commit -m "Updated .git-blame-ignore-revs with commit $COMMIT_HASH"
-            BRANCH_NAME=$(git symbolic-ref --short HEAD)
-            git push origin $BRANCH_NAME
+
+          if git diff --quiet; then
+            echo "forge fmt made no changes."
+            exit 0
           fi
-        id: update
+
+          git config --local user.name 'GitHub Actions Bot'
+          git config --local user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Github Actions automatically updated formatting with forge fmt'
+
+          commit_hash="$(git rev-parse HEAD)"
+          # printf, not echo: echo writes "\n" literally, which put the comment
+          # and the revision on one line and made every entry in
+          # .git-blame-ignore-revs a no-op.
+          printf '# Github Actions automatically updated formatting with forge fmt\n%s\n' "$commit_hash" >> .git-blame-ignore-revs
+          git add .git-blame-ignore-revs
+          git commit -m "Updated .git-blame-ignore-revs with commit ${commit_hash}"
+
+          git push origin "HEAD:refs/heads/${BRANCH_NAME}"
