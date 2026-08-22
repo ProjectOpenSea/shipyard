@@ -8,8 +8,8 @@ on:
 # default branch's copy of this file, with this repository's GITHUB_TOKEN. It
 # never runs in the context of the pull request being commented on. Anything
 # this workflow checks out therefore runs as trusted code, so the job below is
-# restricted to commenters with write access and to head branches that live in
-# this repository.
+# restricted to OWNER, MEMBER and COLLABORATOR comments and to head branches
+# that live in this repository.
 permissions: {}
 
 jobs:
